@@ -75,6 +75,9 @@ public:
   void setAlpha(double alpha);
   double getAlpha() const;
 
+  double getInfo(gum::NodeId x, gum::NodeId y) const;
+  std::string skeletonToDot(const gum::UndiGraph &skeleton);
+
 private:
   void initiation();
   void iteration();
@@ -128,6 +131,7 @@ private:
   std::vector< gum::Arc > latent_couples_;
   gum::ArcProperty< double > arc_probas_;
   gum::EdgeProperty< OT::Indices > sepset_;
+  gum::EdgeProperty< double > edge_info_;
   gum::Heap <
   std::pair< std::tuple< OT::UnsignedInteger,
       OT::UnsignedInteger,

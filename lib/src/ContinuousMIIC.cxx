@@ -274,6 +274,16 @@ void ContinuousMIIC::iteration()
     //times.push_back(diff.count());
     //TRACE("\tElapsed time for this iteration: " << diff.count() << " s" << std::endl);
   }
+  // Filling the edge property with I(X;Y|U) for remaining elements of rank_
+  while(!rank_.empty()){
+      best = rank_.pop();
+      const OT::UnsignedInteger X = std::get< 0 >(*(best.first));
+      const OT::UnsignedInteger Y = std::get< 1 >(*(best.first));
+      OT::Indices U = std::move(std::get< 3 >(*(best.first)));
+      const double IXY_U = info_.compute2PtCorrectedInformation(X, Y, U);
+      edge_info_.insert(gum::Edge(X,Y), IXY_U);
+      delete best.first;
+  }
   TRACE("===== ENDING ITERATION =====" << std::endl);
   TRACE("Summary:" << std::endl);
   //auto end_iteration = std::chrono::steady_clock::now();
@@ -1130,6 +1140,44 @@ void ContinuousMIIC::findBestContributor(const OT::UnsignedInteger X,
   final_pair.first = tup;
   final_pair.second = maxP;
   rank_.insert(final_pair);
+}
+
+double ContinuousMIIC::getInfo(gum::NodeId x, gum::NodeId y) const
+{
+  gum::Edge e(x, y);
+  if (edge_info_.exists(e))
+  {
+    return edge_info_[e];
+  }
+  else
+  {
+    throw OT::InvalidArgumentException(HERE)
+        << "Error: No information for edge (" << e.first() << "," << e.second()
+        << ").";
+  }
+}
+
+std::string ContinuousMIIC::skeletonToDot(const gum::UndiGraph &skeleton)
+{
+  std::stringstream ss;
+  ss << "digraph \"skeleton\" {" << std::endl
+     << "  edge [dir = none];" << std::endl
+     << "  node [shape = ellipse];" << std::endl;
+  ss << "  ";
+  for (const auto node : skeleton.nodes())
+  {
+    ss << node << "; ";
+  }
+  ss << std::endl;
+  for (const auto edge : skeleton.edges())
+  {
+    ss << "  " << edge.first() << "->" << edge.second()
+       << " [label=\"I=" << std::setprecision(3)
+       << getInfo(edge.first(), edge.second())
+       << "\"]" << std::endl;
+  }
+  ss << "}";
+  return ss.str();
 }
 
 } // namespace OTAGRUM
