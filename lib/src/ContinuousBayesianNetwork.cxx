@@ -33,6 +33,12 @@
 
 using namespace OT;
 
+#define TRACE(x)                                                              \
+  {                                                                           \
+    if (verbose_)                                                             \
+      std::cout << x;                                                         \
+  }
+
 namespace OTAGRUM
 {
 
@@ -78,6 +84,16 @@ Bool ContinuousBayesianNetwork::equals(
   const ContinuousBayesianNetwork *p_other =
     dynamic_cast<const ContinuousBayesianNetwork *>(&other);
   return p_other && (*this == *p_other);
+}
+
+void ContinuousBayesianNetwork::setVerbosity(bool verbose)
+{
+  verbose_ = verbose;
+}
+
+bool ContinuousBayesianNetwork::getVerbosity() const
+{
+  return verbose_;
 }
 
 /* String converter */
@@ -126,9 +142,12 @@ void ContinuousBayesianNetwork::computeRange()
 /* Get one realization of the distribution */
 Point ContinuousBayesianNetwork::getRealization() const
 {
+  TRACE("Generating a realization from the CBN" << std::endl)
   const UnsignedInteger dimension = getDimension();
   Point result(dimension);
   const Indices order(dag_.getTopologicalOrder());
+
+  TRACE("    Topological order: " << order << std::endl)
 
   // The generation works this way:
   // + go through the nodes according to a topological order wrt the dag
@@ -142,8 +161,10 @@ Point ContinuousBayesianNetwork::getRealization() const
   for (UnsignedInteger i = 0; i < order.getSize(); ++i)
   {
     const UnsignedInteger globalI = order[i];
+    TRACE("    Processing variable: " << globalI << std::endl)
     const Distribution localDistribution(jointDistributions_[globalI]);
     const Indices parents(dag_.getParents(globalI));
+    TRACE("        List of parents in the graph: " << parents)
     const UnsignedInteger conditioningDimension(parents.getSize());
     if (conditioningDimension == 0)
     {
@@ -157,7 +178,9 @@ Point ContinuousBayesianNetwork::getRealization() const
       result[globalI] = localDistribution.computeConditionalQuantile(
                           RandomGenerator::Generate(), y);
     }
+    TRACE("        Generated random value: " << result[globalI] << std::endl)
   } // i
+  TRACE("Generated random vector: " << result << std::endl)
   return result;
 }
 

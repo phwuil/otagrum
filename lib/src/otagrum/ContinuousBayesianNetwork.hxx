@@ -84,6 +84,9 @@ public:
   NamedDAG getNamedDAG() const;
   DistributionCollection getDistributionCollection() const;
 
+  bool getVerbosity() const;
+  void setVerbosity(bool verbose);
+
   /** Method save() stores the object through the StorageManager */
   void save(OT::Advocate & adv) const;
 
@@ -95,6 +98,8 @@ protected:
 private:
   /** Compute the range */
   void computeRange();
+
+  bool verbose_ = false;
 
   /** The main parameter set of the distribution */
 
