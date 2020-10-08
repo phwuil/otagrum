@@ -93,6 +93,7 @@ ot_check_test ( CorrectedMutualInformation_std )
 ot_check_test ( ContinuousMIIC_std )
 ot_check_test ( TabuList_std )
 ot_check_test ( ContinuousBayesianNetwork_std )
+ot_check_test ( ContinuousBayesianNetworkFactory_std )
 ot_check_test ( OTAgrumResourceMap_std )
 
 add_custom_target ( cppcheck COMMAND ${CMAKE_CTEST_COMMAND} -R "^cppcheck_"
