@@ -75,6 +75,9 @@ public:
   void setAlpha(double alpha);
   double getAlpha() const;
 
+  void setMaxLog(int maxLog);
+  int getMaxLog() const;
+
   double getInfo(gum::NodeId x, gum::NodeId y) const;
   std::string skeletonToDot(const gum::UndiGraph &skeleton);
 

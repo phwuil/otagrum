@@ -140,6 +140,16 @@ double ContinuousMIIC::getAlpha() const
   return info_.getAlpha();
 }
 
+void ContinuousMIIC::setMaxLog(int maxLog)
+{
+  maxLog_ = maxLog;
+}
+
+int ContinuousMIIC::getMaxLog() const
+{
+  return maxLog_;
+}
+
 std::vector< gum::Arc > ContinuousMIIC::getLatentVariables() const
 {
   return latent_couples_;
