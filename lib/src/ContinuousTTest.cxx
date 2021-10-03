@@ -296,6 +296,136 @@ double ContinuousTTest::getTTest(const OT::UnsignedInteger Y,
   return T;
 }
 
+double ContinuousTTest::getHDistance(const OT::UnsignedInteger Y,
+                                     const OT::UnsignedInteger Z,
+                                     const OT::Indices &X) const
+{
+
+  OT::UnsignedInteger k = 0;  // Bandwidth parameter
+
+  const auto dY = data_.getMarginal(Y);
+  const auto dZ = data_.getMarginal(Z);
+  const auto dX = data_.getMarginal(X);
+
+  OT::Point logFX, logFYX, logFZX, logFYZX;
+  std::tie(logFX, logFYX, logFZX, logFYZX, k) = getLogPDFs(Y, Z, X);
+
+  const auto d = X.getSize();     // Conditioning set dimension
+  const auto N = data_.getSize(); // Size of data set
+
+  double H = 0.0;
+  double dH = 0.0;
+
+  const double small = OT::SpecFunc::Precision;
+  const double smallLog = std::log(OT::SpecFunc::Precision);
+
+  double logDenominator = 0.0;
+
+  double yI = 0.0;
+  double zI = 0.0;
+
+
+  if (d == 0)    // If the conditioning set is empty
+  {
+    for (unsigned int i = 0; i < N; ++i)
+    {
+      logDenominator = logFYZX[i];
+      yI = data_(i, Y);
+      zI = data_(i, Z);
+      if ((logDenominator > smallLog) && (yI > small) && (yI < 1.0 - small) &&
+          (zI > small) && (zI < 1.0 - small))
+      {
+        // dH^2 = (1-sqrt(1 * 1 / (fYZX * 1)))^2
+        //      = (1-exp(0.5*log(1 / fYZX))^2
+        //      = (-expm1(-0.5*log(fYZX)))^2
+        //      = (expm1(-0.5*log(fYZX)))^2
+        dH = std::expm1(-0.5 * logDenominator);
+        H += dH * dH;
+      } // logDenominator > smallLog
+      else
+        LOGINFO(OT::OSS() << "Skipped contribution i=" << i
+                << ", logDenominator=" << logDenominator);
+    } // i
+  }   // d == 0
+
+  else if (d == 1)    // If the conditioning set is of size 1
+  {
+    for (unsigned int i = 0; i < N; ++i)
+    {
+      logDenominator = logFYZX[i];
+      yI = data_(i, Y);
+      zI = data_(i, Z);
+      if ((logDenominator > smallLog) && (yI > small) && (yI < 1.0 - small) &&
+          (zI > small) && (zI < 1.0 - small))
+      {
+        double xJ = data_(i, X[0]);
+        if ((xJ <= small) || (xJ >= 1.0 - small))
+        {
+          continue;
+        }
+        double gX = 1.0 / pPar1MoinsP(xJ);
+        gX = std::sqrt(gX);
+        // dH^2 = (1-sqrt(fYX * fZX / (fYZX * 1)))^2
+        //      = (1-exp(0.5*log(fYX * fZX / fYZX))^2
+        //      = (-expm1(0.5*(log(fYX) + log(fZX) - log(fYZX))))^2
+        //      = (expm1(0.5*(log(fYX) + log(fZX) - log(fYZX))))^2
+        dH = std::expm1(0.5 * (logFYX[i] + logFZX[i] - logDenominator));
+        H += dH * dH;
+
+      } // logDenominator > smallLog
+      else
+        LOGDEBUG(OT::OSS() << "Skip contribution i=" << i
+                 << ", logDenominator=" << logDenominator);
+    } // i
+  }   // d == 1
+
+  else
+  {
+    for (unsigned int i = 0; i < N; ++i)
+    {
+      logDenominator = logFYZX[i] + logFX[i];
+      yI = data_(i, Y);
+      zI = data_(i, Z);
+      if ((logDenominator > smallLog) && (yI > small) && (yI < 1.0 - small) &&
+          (zI > small) && (zI < 1.0 - small))
+      {
+        double gX = 1.0;
+        double xJ = 0.0;
+        OT::Bool isSmall = false;
+        for (unsigned int j = 0; j < d; ++j)
+        {
+          xJ = data_(i, X[j]);
+          if ((xJ <= small) || (xJ >= 1.0 - small))
+          {
+            isSmall = true;
+            break;
+          }
+          gX /= pPar1MoinsP(xJ);
+          gX = std::sqrt(gX);
+        }
+        if (isSmall)
+          continue;
+        // dH^2 = (1-sqrt(fYX * fZX / (fYZX * fX)))^2
+        //      = (1-exp(0.5*log(fYX * fZX / (fYZX * fX)))^2
+        //      = (-expm1(0.5*(log(fYX) + log(fZX) - log(fYZX) - log(fX))))^2
+        //      = (expm1(0.5*(log(fYX) + log(fZX) - log(fYZX) - log(fX))))^2
+        dH = std::expm1(0.5 * (logFYX[i] + logFZX[i] - logDenominator));
+        H += dH * dH;
+
+      } // logDenominator > smallLog
+      else
+        LOGDEBUG(OT::OSS() << "Skip contribution i=" << i
+                 << ", logDenominator=" << logDenominator);
+    } // i
+  }   // d > 0
+
+  // mean
+  H /= N;
+
+  return H;
+}
+
+
 double ContinuousTTest::getTTestWithoutCorrections(OT::UnsignedInteger Y,
     OT::UnsignedInteger Z,
     const OT::Indices &X) const

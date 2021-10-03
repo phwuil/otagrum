@@ -42,6 +42,10 @@ public:
   void setAlpha(const double alpha);
   double getAlpha(void) const;
 
+  double getHDistance(const OT::UnsignedInteger Y,
+                      const OT::UnsignedInteger Z,
+                      const OT::Indices &X) const;
+
   double getTTest(const OT::UnsignedInteger Y,
                   const OT::UnsignedInteger Z,
                   const OT::Indices & X) const;
