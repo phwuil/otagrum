@@ -95,8 +95,10 @@ Utils::Discretize(const OT::Distribution &distribution,
   }
 
   // Normalize the discretization to take into account roundoff errors
-  for (gum::Size i = 0; i < v.domainSize(); ++i)
-    result[i] /= sum;
+  if (sum != 0){
+    for (gum::Size i = 0; i < v.domainSize(); ++i)
+        result[i] /= sum;
+  }
 
   gum::Potential<double> p;
   p.add(v);
