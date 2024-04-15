@@ -1,8 +1,6 @@
 #include <iostream>
-#include <openturns/Matrix.hxx>
+#include <openturns/SquareMatrix.hxx>
 #include <openturns/IdentityMatrix.hxx>
-//#include <Eigen/Dense>
-//#include <Eigen/LU>
 #include <cmath>
 
 
@@ -11,42 +9,38 @@
 
 using namespace std;
 using namespace OT;
-//using namespace Eigen;
 
 // Constructors
 
 
 CanonicalForm::CanonicalForm(Gaussian G){
     scope = G.scope;
-    Matrix I = Matrix(G.Sigma.getNbRows(), G.Sigma.getNbColumns());
-    I.setDiagonal(1.);
-    K = SquareMatrix(G.Sigma.solveLinearSystem(I));
+    K = SquareMatrix(G.Sigma.solveLinearSystem(IdentityMatrix(scope.getSize())).getImplementation());
     h = K * G.mu;
-    g = -0.5 * ( G.mu.transpose()*h +
-                 log(pow(2*M_PI, G.Sigma.rows()) * G.Sigma.computeDeterminant()) );
+    g = -0.5 * ( G.mu.dot(h) +
+                 log(pow(2*M_PI, G.Sigma.getNbRows()) * G.Sigma.computeDeterminant()) );
     lp = log(G.p);
 }
 
 CanonicalForm::CanonicalForm(LinearGaussian LG){
     scope = LG.uncond_scope + LG.cond_scope;
-    MatrixXd M = MatrixXd::Zero(scope.getSize(), LG.uncond_scope.getSize());
+    Matrix M = Matrix(scope.getSize(), LG.uncond_scope.getSize(), {0});
 
     int rowu = 0;
     int rowc = 0;
     int row = 0;
     for(auto v : scope.getVariables()){
         if(LG.uncond_scope.contains(v)){
-            M.row(row) = MatrixXd::Identity(LG.uncond_scope.getSize(),
-                                            LG.uncond_scope.getSize()).row(rowu);
+            M.getRow(row) = IdentityMatrix(LG.uncond_scope.getSize()).getRow(rowu);
             rowu++;
         }
         else if(LG.cond_scope.contains(v)){
-            M.row(row) = -LG.B.row(rowc);
+            M.getRow(row) = -LG.B.getRow(rowc);
             rowc++;
         }
         row++;
     }
-    MatrixXd Sigma_inv = LG.Sigma.inverse();
+    SquareMatrix Sigma_inv = SquareMatrix(LG.Sigma.solveLinearSystem(IdentityMatrix(LG.Sigma.getNbRows())).getImplementation());
     K = M * Sigma_inv * M.transpose();
     h = M * Sigma_inv * LG.mu;
     g = - 0.5 * LG.mu.transpose() * Sigma_inv * LG.mu
