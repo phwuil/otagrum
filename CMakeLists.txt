@@ -30,6 +30,9 @@ endif()
 find_package (aGrUM 1.8 CONFIG REQUIRED)
 message(STATUS "Found aGrUM: ${AGRUM_ROOTDIR} (found version \"${AGRUM_VERSION_STRING}\")")
 
+find_package (Eigen3 3.4 CONFIG REQUIRED)
+message(STATUS "Found Eigen3: ${EIGEN3_ROOT_DIR} (found version \"${EIGEN3_VERSION_STRING}\")")
+
 find_package(OpenTURNS 1.17 CONFIG REQUIRED)
 message(STATUS "Found OpenTURNS: ${OPENTURNS_ROOT_DIR} (found version \"${OPENTURNS_VERSION_STRING}\")")
 if (NOT DEFINED OPENTURNS_PYTHON_MODULE_PATH)

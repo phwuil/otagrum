@@ -2,6 +2,12 @@
 
 ot_add_current_dir_to_include_dirs ()
 
+ot_add_source_file ( CanonicalForm.cxx )
+ot_add_source_file ( ContinuousVariable.cxx )
+ot_add_source_file ( Gaussian.cxx )
+ot_add_source_file ( LinearGaussian.cxx )
+ot_add_source_file ( Scope.cxx )
+ot_add_source_file ( VariableElimination.cxx )
 ot_add_source_file ( Utils.cxx )
 ot_add_source_file ( NamedDAG.cxx)
 ot_add_source_file ( NamedJunctionTree.cxx)
@@ -18,6 +24,12 @@ ot_add_source_file ( JunctionTreeBernsteinCopula.cxx )
 ot_add_source_file ( JunctionTreeBernsteinCopulaFactory.cxx )
 ot_add_source_file ( OTAgrumResourceMap.cxx )
 
+ot_install_header_file ( CanonicalForm.hxx )
+ot_install_header_file ( ContinuousVariable.hxx )
+ot_install_header_file ( Gaussian.hxx )
+ot_install_header_file ( LinearGaussian.hxx )
+ot_install_header_file ( Scope.hxx )
+ot_install_header_file ( VariableElimination.hxx )
 ot_install_header_file ( Utils.hxx )
 ot_install_header_file ( NamedDAG.hxx )
 ot_install_header_file ( NamedJunctionTree.hxx )
@@ -53,6 +65,7 @@ set_target_properties ( otagrum PROPERTIES SOVERSION ${LIB_SOVERSION} )
 
 target_link_libraries (otagrum ${OPENTURNS_LIBRARY})
 target_link_libraries (otagrum agrum)
+target_link_libraries (otagrum Eigen3::Eigen)
 
 # Add targets to the build-tree export set
 export (TARGETS otagrum FILE ${PROJECT_BINARY_DIR}/otagrum-Targets.cmake)
