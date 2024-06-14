@@ -17,5 +17,7 @@ API
     CorrectedMutualInformation
     NamedJunctionTree
     NamedDAG
+    GaussianBayesianNetwork
+    GaussianInference
     ContinuousBayesianNetwork
     ContinuousBayesianNetworkFactory

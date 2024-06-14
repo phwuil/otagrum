@@ -160,7 +160,7 @@ CanonicalForm operator/(const CanonicalForm &lhs, const CanonicalForm &rhs){
     return ratio;
 }
 
-CanonicalForm CanonicalForm::addVariable(const ContinuousVariable variable){
+CanonicalForm CanonicalForm::addVariable(const GaussianVariable variable){
     if(scope.contains(variable))
         return *this;
 

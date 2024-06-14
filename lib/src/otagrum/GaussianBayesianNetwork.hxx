@@ -21,10 +21,12 @@
 #ifndef OTAGRUM_GAUSSIANBAYESIANNETWORK_HXX
 #define OTAGRUM_GAUSSIANBAYESIANNETWORK_HXX
 
-#include <openturns/ContinuousDistribution.hxx>
-#include <openturns/Distribution.hxx>
+//#include <openturns/ContinuousDistribution.hxx>
+//#include <openturns/Distribution.hxx>
 
 #include "otagrum/NamedDAG.hxx"
+#include "otagrum/GaussianVariable.hxx"
+#include "otagrum/Scope.hxx"
 #include "otagrum/otagrumprivate.hxx"
 
 namespace OTAGRUM
@@ -33,87 +35,27 @@ namespace OTAGRUM
 /**
  * @class GaussianBayesianNetwork
  *
- * The GaussianBayesianNetwork distribution.
+ * The GaussianBayesianNetwork structure.
  */
 class GaussianBayesianNetwork
-  : public OT::ContinuousDistribution
 {
 public:
 
-  typedef OT::Collection< OT::Distribution >           DistributionCollection;
-  typedef OT::PersistentCollection< OT::Distribution > DistributionPersistentCollection;
 
   /** Default constructor */
   GaussianBayesianNetwork();
 
-  /** Parameters constructor */
-  GaussianBayesianNetwork(const NamedDAG & dag,
-                          const DistributionCollection & CLGs);
-
 public:
-  /** Comparison operator */
-  using OT::ContinuousDistribution::operator ==;
-  OT::Bool operator ==(const GaussianBayesianNetwork & other) const;
-protected:
-  OT::Bool equals(const OT::DistributionImplementation & other) const override;
-public:
-
-  /** String converter */
-  OT::String __repr__() const override;
-  OT::String __str__(const OT::String & offset = "") const override;
-
-
-
-  /* Interface inherited from Distribution */
-
-  /** Virtual constructor */
-  GaussianBayesianNetwork * clone() const override;
-
-  /** Get one realization of the distribution */
-  OT::Point getRealization() const override;
-
-  /** Get the PDF of the distribution, i.e. P(point < X < point+dx) = PDF(point)dx + o(dx) */
-  using OT::ContinuousDistribution::computePDF;
-  OT::Scalar computePDF(const OT::Point & point) const override;
-
-  /** Get the log-PDF of the distribution */
-  using OT::ContinuousDistribution::computeLogPDF;
-  OT::Scalar computeLogPDF(const OT::Point & point) const override;
-
-  /** DAG, marginals and copulas accessor */
-  void setDAGAndMarginalsAndCopulas(const NamedDAG & dag,
-                                    const DistributionCollection & marginals,
-                                    const DistributionCollection & copulas);
-
   gum::DAG getDAG() const;
-  OT::Indices getParents(const OT::UnsignedInteger nodeId) const;
-  /** One marginal per node */
-  DistributionCollection getMarginals() const;
 
-  using OT::ContinuousDistribution::getMarginal;
-  OT::Distribution getMarginal(const OT::UnsignedInteger i) const override;
+  int addVariable(GaussianVariable variable);
+  gum::Arc addArc(int varId1, int varId2, double weight);
 
-  OT::Distribution getCopulaAtNode(const OT::UnsignedInteger i) const;
-
-  /** Method save() stores the object through the StorageManager */
-  void save(OT::Advocate & adv) const override;
-
-  /** Method load() reloads the object from the StorageManager */
-  void load(OT::Advocate & adv) override;
-
-protected:
 
 private:
-  /** Compute the range */
-  void computeRange() override;
-
-  /** The main parameter set of the distribution */
-
-  /** Underlying junction tree */
-  NamedDAG dag_;
-
-  /** Collection of marginal distributions */
-  DistributionPersistentCollection marginals_;
+  Scope scope_; // Maybe it should be changed into a dictionary
+  gum::DAG dag_;
+  gum::ArcProperty< double > arc_weights_;
 }; /* class GaussianBayesianNetwork */
 
 } /* namespace OTAGRUM */

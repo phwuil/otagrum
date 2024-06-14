@@ -5,7 +5,7 @@
 #include <vector>
 #include <initializer_list>
 
-#include "otagrum/ContinuousVariable.hxx"
+#include "otagrum/GaussianVariable.hxx"
 
 class Scope {
     friend std::ostream& operator<<(std::ostream& os, const Scope& item);
@@ -18,8 +18,8 @@ class Scope {
     public:
         // Constructeur
         Scope() = default;
-        Scope(std::vector<ContinuousVariable>& variables);
-        Scope(std::initializer_list<ContinuousVariable> l);
+        Scope(std::vector<GaussianVariable>& variables);
+        Scope(std::initializer_list<GaussianVariable> l);
 
         // Constucteur de copy
         Scope(const Scope& item) = default;
@@ -35,17 +35,17 @@ class Scope {
         ~Scope() {}
 
         // Accesseurs
-        const std::vector<ContinuousVariable>& getVariables() const {
-            return variables;
+        const std::vector<GaussianVariable>& getVariables() const {
+            return _variables_;
         }
-        const unsigned int& getSize() const {return size;}
+        const unsigned int& getSize() const {return _size_;}
 
-        bool contains(const ContinuousVariable& item) const;
-        bool isEmpty() { return variables.empty(); }
+        bool contains(const GaussianVariable& item) const;
+        bool isEmpty() { return _variables_.empty(); }
 
         // Ajoute une variable dans le scope en retournant la position
         // a laquelle elle a été ajoutée dans le vecteur trié.
-        int addVariable(ContinuousVariable variable);
+        int addVariable(GaussianVariable variable);
         int addVariables(Scope scope);
 
         Scope& operator+=(const Scope &rhs);
@@ -53,8 +53,8 @@ class Scope {
 
         
     private:
-        std::vector<ContinuousVariable> variables;
-        unsigned int size = 0;
+        std::vector<GaussianVariable> _variables_;
+        unsigned int _size_ = 0;
 };
         
 std::ostream& operator<<(std::ostream& os, const Scope& item);

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <Eigen/LU>
-#include "otagrum/LinearGaussian.hxx"
+#include "otagrum/ConditionalLinearGaussian.hxx"
 
 using namespace std;
 

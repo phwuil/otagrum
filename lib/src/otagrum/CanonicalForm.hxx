@@ -11,9 +11,9 @@
 class CanonicalForm;
 #include "otagrum/Scope.hxx"
 #include "otagrum/Gaussian.hxx"
-#include "otagrum/LinearGaussian.hxx"
+#include "otagrum/ConditionalLinearGaussian.hxx"
 
-typedef std::vector<std::pair<ContinuousVariable, double> > ContinuousEvidence;
+typedef std::vector<std::pair<GaussianVariable, double> > ContinuousEvidence;
 typedef std::vector<std::pair<gum::LabelizedVariable*, std::string> > DiscreteEvidence;
 
 class CanonicalForm {
@@ -73,7 +73,7 @@ class CanonicalForm {
         double getG() const {return g;}
         double getLp() const {return lp;}
 
-        CanonicalForm addVariable(ContinuousVariable variable);
+        CanonicalForm addVariable(GaussianVariable variable);
         CanonicalForm addVariables(const Scope scope);
         CanonicalForm marginal(const Scope summed_scope) const;
         CanonicalForm reduce(ContinuousEvidence evidence);
@@ -103,44 +103,44 @@ bool operator<=(const CanonicalForm &lhs, const CanonicalForm &rhs);
 bool operator>(const CanonicalForm &lhs, const CanonicalForm &rhs);
 bool operator>=(const CanonicalForm &lhs, const CanonicalForm &rhs);
 
-namespace gum {
-    template <> class HashFunc<CanonicalForm> : public
-    HashFuncBase<CanonicalForm> {
-        public:
-            Size operator()(const CanonicalForm &key) const {
-                auto variables = key.getScope().getVariables();
-                auto matrix = key.getK();
-                auto vector = key.getH();
-                auto constant = key.getG();
-                auto proba = key.getLp();
+/*namespace gum {*/
+    /*template <> class HashFunc<CanonicalForm> : public*/
+    /*HashFuncBase<CanonicalForm> {*/
+        /*public:*/
+            /*Size operator()(const CanonicalForm &key) const {*/
+                /*auto variables = key.getScope().getVariables();*/
+                /*auto matrix = key.getK();*/
+                /*auto vector = key.getH();*/
+                /*auto constant = key.getG();*/
+                /*auto proba = key.getLp();*/
 
-                if(variables.empty()){
-                    //return (Size(constant)*HashFuncConst::gold) & this->_hash_mask;
-                    return (Size(proba)*HashFuncConst::gold) & this->hash_mask_;
-                }
-                else {
-                    double result = 0.;
-                    for(auto it = variables.begin(); it != variables.end(); ++it){
-                        result += std::stod(it->getName());
-                        result *= HashFuncConst::gold;
-                    }
-                    for(auto x : matrix.reshaped()){
-                        result += x;
-                        result *= HashFuncConst::gold;
-                    }
-                    for(auto x : vector){
-                        result += x;
-                        result *= HashFuncConst::gold;
-                    }
-                    result += constant;
-                    result *= HashFuncConst::gold;
-                    result += proba;
-                    result *= HashFuncConst::gold;
+                /*if(variables.empty()){*/
+                    /*//return (Size(constant)*HashFuncConst::gold) & this->_hash_mask;*/
+                    /*return (Size(proba)*HashFuncConst::gold) & this->hash_mask_;*/
+                /*}*/
+                /*else {*/
+                    /*double result = 0.;*/
+                    /*for(auto it = variables.begin(); it != variables.end(); ++it){*/
+                        /*result += std::stod(it->getName());*/
+                        /*result *= HashFuncConst::gold;*/
+                    /*}*/
+                    /*for(auto x : matrix.reshaped()){*/
+                        /*result += x;*/
+                        /*result *= HashFuncConst::gold;*/
+                    /*}*/
+                    /*for(auto x : vector){*/
+                        /*result += x;*/
+                        /*result *= HashFuncConst::gold;*/
+                    /*}*/
+                    /*result += constant;*/
+                    /*result *= HashFuncConst::gold;*/
+                    /*result += proba;*/
+                    /*result *= HashFuncConst::gold;*/
 
-                    return Size(result) & this->hash_mask_;
-                }
-            }
-    };
-}
+                    /*return Size(result) & this->hash_mask_;*/
+                /*}*/
+            /*}*/
+    /*};*/
+/*}*/
 
 #endif // CANONICAL_FORM_H
