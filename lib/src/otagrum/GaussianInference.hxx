@@ -83,7 +83,7 @@ private:
    *
    * @return The resulting product of potentials
    */
-  gum::Potential<CanonicalForm> _sum_product_ve_(
+  CanonicalForm _sum_product_ve_(
           std::vector<GaussianVariable> &elim_order,
           ContinuousEvidence &evidence,
           std::vector< CanonicalForm > cf_set);

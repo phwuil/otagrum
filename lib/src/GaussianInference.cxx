@@ -76,12 +76,11 @@ void GaussianInference::_sum_product_eliminate_var_(
         vector< CanonicalForm > &cf_set,
         GaussianVariable &variable){
 
-    // Looking for potentials containing the variable to eliminate
-    vector<gum::Potential< CanonicalForm > > contains_var;
-    vector<gum::Potential< CanonicalForm > > not_contains_var;
+    // Looking for canonical forms containing the variable to eliminate
+    vector< CanonicalForm > contains_var;
+    vector< CanonicalForm > not_contains_var;
     for(auto it=cf_set.begin(); it!=cf_set.end(); ++it){
-        gum::Instantiation I(*it);
-        if(it->get(I).getScope().contains(variable)){
+        if(it->getScope().contains(variable)){
             contains_var.push_back(*it);
         }
         else{
@@ -91,18 +90,14 @@ void GaussianInference::_sum_product_eliminate_var_(
     }
 
     // Multiplying potentials containing the variable to eliminate
-    gum::Potential<CanonicalForm> product;
+    CanonicalForm product;
     for(auto cf : contains_var){
         product *= cf;
     }
 
     // Eliminating the variable from the product
     if(!contains_var.empty()){
-        gum::Instantiation I(product);
-        for(int i=0; i != product.domainSize() ; ++i){
-            product.set(I, product.get(I).marginal(Scope({variable})));
-            I.inc();
-        }
+        product = product.marginal(Scope({variable})); // CHECK IF MARGINAL IS DONE INPLACE
         not_contains_var.push_back(product);
     }
 
@@ -110,7 +105,7 @@ void GaussianInference::_sum_product_eliminate_var_(
     cf_set = not_contains_var;
 }
 
-gum::Potential<CanonicalForm> GaussianInference::sum_product_ve(
+CanonicalForm GaussianInference::_sum_product_ve_(
         vector<GaussianVariable> &elim_order,
         ContinuousEvidence &evidence,
         vector< CanonicalForm > cf_set){
@@ -123,7 +118,7 @@ gum::Potential<CanonicalForm> GaussianInference::sum_product_ve(
     //cout << "pot avant : " << potential_set << endl;
 
     if(!evidence.empty()){
-        for(const auto& cf: cf_set){
+        for(auto& cf: cf_set){
                 cf.reduce(evidence);
         }
     }
@@ -132,7 +127,7 @@ gum::Potential<CanonicalForm> GaussianInference::sum_product_ve(
 
     if(!elim_order.empty()){
         for(auto& v : elim_order){
-            sum_product_eliminate_var(cf_set, v);
+            _sum_product_eliminate_var_(cf_set, v);
         }
     }
 
