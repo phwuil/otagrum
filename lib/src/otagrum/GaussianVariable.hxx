@@ -2,30 +2,19 @@
 #define GAUSSIAN_VARIABLE_H
 
 #include <iostream>
+#include <agrum/tools/variables/continuousVariable.h>
 
-class GaussianVariable {
-    friend std::ostream& operator<<(std::ostream& os, const GaussianVariable& item);
-    friend bool operator==(const GaussianVariable &lhs,
-                           const GaussianVariable &rhs);
-    friend bool operator<(const GaussianVariable &lhs,
-                          const GaussianVariable &rhs);
-    friend bool operator<=(const GaussianVariable &lhs,
-                           const GaussianVariable &rhs);
-    friend bool operator>(const GaussianVariable &lhs,
-                          const GaussianVariable &rhs);
-    friend bool operator>=(const GaussianVariable &lhs,
-                           const GaussianVariable &rhs);
+namespace OTAGRUM {
 
+class GaussianVariable : public gum::ContinuousVariable< double > {
     public:
         // Constructeur
         GaussianVariable(std::string name,
+                         std::string description="",
                          double mu=0,
-                         double sigma=1,
-                         std::string desc=""): _name_(name),
-                                               _mu_(mu),
-                                               _sigma_(sigma),
-                                               _desc_(desc),
-                                               _id_(_count_) {_count_++;}
+                         double sigma=1): ContinuousVariable(name, description),
+                                          _mu_(mu),
+                                          _sigma_(sigma) {};
 
         // Constructeur de copy
         GaussianVariable(const GaussianVariable&) = default;
@@ -44,33 +33,19 @@ class GaussianVariable {
         // Returns a pointer on a new copy of this.
         GaussianVariable* clone() const;
 
-        int getId() const {return _id_;}
-        double getMu() const { return _mu_; }
-        double getSigma() const { return _sigma_; }
-        std::string getName() const { return _name_; }
-        std::string getDesc() const { return _desc_; }
+        double mu() const { return _mu_; }
+        double sigma() const { return _sigma_; }
 
-        void setName(const std::string& new_name);
         void setMu(double mu);
         void setSigma(double sigma);
 
-    private:
-        static int _count_;
+        std::string toString() const;
 
-        std::string _name_;
+    private:
         double _mu_;
         double _sigma_;
-        std::string _desc_;
-        int _id_;
-        
 };
 
-std::ostream& operator<<(std::ostream& os, const GaussianVariable& item);
-
-bool operator==(const GaussianVariable &lhs, const GaussianVariable &rhs);
-bool operator<(const GaussianVariable &lhs, const GaussianVariable &rhs);
-bool operator<=(const GaussianVariable &lhs, const GaussianVariable &rhs);
-bool operator>(const GaussianVariable &lhs, const GaussianVariable &rhs);
-bool operator>=(const GaussianVariable &lhs, const GaussianVariable &rhs);
+} // namespace OTAGRUM
 
 #endif // GAUSSIAN_VARIABLE_H

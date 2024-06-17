@@ -115,8 +115,8 @@ namespace OTAGRUM {
   // @throw DuplicateLabel if the name already exists in the mapping
   // @throw DuplicateElement if the id already exists in the mapping
   gum::NodeId VariableNodeMap::insert(gum::NodeId id, const GaussianVariable& var) {
-    if (_names2nodes_.existsFirst(var.getName())) {
-      GUM_ERROR(gum::DuplicateLabel, "Unable to insert var with the name '" << var.getName() << "'.")
+    if (_names2nodes_.existsFirst(var.name())) {
+      GUM_ERROR(gum::DuplicateLabel, "Unable to insert var with the name '" << var.name() << "'.")
     }
 
     if (exists(id)) {
@@ -124,7 +124,7 @@ namespace OTAGRUM {
     }
 
     _nodes2vars_.insert(id, var.clone());
-    _names2nodes_.insert(var.getName(), id);
+    _names2nodes_.insert(var.name(), id);
 
     return id;
   }
@@ -132,7 +132,7 @@ namespace OTAGRUM {
   // Removes a var and it's id of this mapping. The pointer is deleted.
   void VariableNodeMap::erase(gum::NodeId id) {
     const GaussianVariable* var = _nodes2vars_.second(id);
-    _names2nodes_.eraseFirst(var->getName());
+    _names2nodes_.eraseFirst(var->name());
     delete var;
     _nodes2vars_.eraseFirst(id);
   }
@@ -161,7 +161,7 @@ namespace OTAGRUM {
 
     auto var = const_cast< GaussianVariable* >(_nodes2vars_.second(id));
 
-    _names2nodes_.eraseFirst(var->getName());
+    _names2nodes_.eraseFirst(var->name());
     var->setName(new_name);
     _names2nodes_.insert(new_name, id);
   }

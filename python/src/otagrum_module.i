@@ -34,7 +34,7 @@
 %include ContinuousMIIC.i
 %include TabuList.i
 %include GaussianVariable.i
-%include GaussianBayesianNetwork.i
-%include GaussianInference.i
+/*%include GaussianBayesianNetwork.i*/
+/*%include GaussianInference.i*/
 %include ContinuousBayesianNetwork.i
 %include ContinuousBayesianNetworkFactory.i

@@ -1,41 +1,25 @@
 #include <iostream>
+#include <string>
 
 #include "otagrum/GaussianVariable.hxx"
 
 using namespace std;
 
-int GaussianVariable::_count_ = 0;
-
-ostream& operator<<(ostream& os, const GaussianVariable& item){
-    os << item._name_;
-    return os;
-}
+namespace OTAGRUM {
 
 GaussianVariable* GaussianVariable::clone() const { return new GaussianVariable(*this); }
 
-bool operator==(const GaussianVariable &lhs, const GaussianVariable &rhs){
-    return lhs._id_ == rhs._id_;
-}
-bool operator<(const GaussianVariable &lhs, const GaussianVariable &rhs){
-    return lhs._id_ < rhs._id_;
-}
-bool operator<=(const GaussianVariable &lhs, const GaussianVariable &rhs){
-    return lhs._id_ < rhs._id_ ||
-           lhs._id_ == rhs._id_;
-}
-bool operator>(const GaussianVariable &lhs, const GaussianVariable &rhs){
-    return !(lhs<=rhs);
-}
-bool operator>=(const GaussianVariable &lhs, const GaussianVariable &rhs){
-    return !(lhs<rhs);
-}
-
-void GaussianVariable::setName(const std::string &new_name){
-    _name_ = new_name;
-}
 void GaussianVariable::setMu(double mu){
     _mu_ = mu;
 }
 void GaussianVariable::setSigma(double sigma){
     _sigma_ = sigma;
 }
+
+std::string GaussianVariable::toString() const {
+    std::ostringstream stream;
+    stream << name() << '(' << _mu_ << ',' << _sigma_ << ')';
+    return stream.str();
+}
+
+} // namespace OTAGRUM
