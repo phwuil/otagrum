@@ -33,8 +33,8 @@ class GaussianVariable : public gum::ContinuousVariable< double > {
         // Returns a pointer on a new copy of this.
         GaussianVariable* clone() const;
 
-        double mu() const { return _mu_; }
-        double sigma() const { return _sigma_; }
+        double getMu() const { return _mu_; }
+        double getSigma() const { return _sigma_; }
 
         void setMu(double mu);
         void setSigma(double sigma);

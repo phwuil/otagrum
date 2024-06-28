@@ -36,120 +36,101 @@ using namespace OT;
 namespace OTAGRUM
 {
 
-//CLASSNAMEINIT(GaussianBayesianNetwork)
+CLASSNAMEINIT(GaussianBayesianNetwork)
 
-//static const Factory<GaussianBayesianNetwork>
-//Factory_GaussianBayesianNetwork;
+static const Factory<GaussianBayesianNetwork>
+Factory_GaussianBayesianNetwork;
 
 /* Default constructor */
 GaussianBayesianNetwork::GaussianBayesianNetwork()
-  //: dag_()
-  //, marginals_(0)
-  //, copulas_(0)
+  : ContinuousDistribution()
+  , _dag_()
+  , _distributions_(0)
 {
-  //setName("GaussianBayesianNetwork");
-  //setDAGAndMarginalsAndCopulas(dag_, marginals_, copulas_);
+  setName("GaussianBayesianNetwork");
+  setDAGAndDistributions(_dag_, _distributions_);
 }
 
 /* Parameters constructor */
-//GaussianBayesianNetwork::GaussianBayesianNetwork(const NamedDAG &dag,
-    //const DistributionCollection & marginals,
-    //const DistributionCollection & copulas)
-  //: ContinuousDistribution()
-  //, dag_(dag)
-  //, marginals_(0)
-  //, copulas_(0)
-//{
-  //setName("GaussianBayesianNetwork");
-  //setDAGAndMarginalsAndCopulas(dag, marginals, copulas);
-//}
-
-gum::DAG GaussianBayesianNetwork::getDAG() const {
-    return dag_;
+GaussianBayesianNetwork::GaussianBayesianNetwork(const NamedDAG &dag,
+    const DistributionCollection & marginals,
+    const DistributionCollection & copulas)
+  : ContinuousDistribution()
+  , dag_(dag)
+  , marginals_(0)
+  , copulas_(0)
+{
+  setName("GaussianBayesianNetwork");
+  setDAGAndMarginalsAndCopulas(dag, marginals, copulas);
 }
-
-int GaussianBayesianNetwork::addVariable(GaussianVariable variable){
-    auto id = scope_.addVariable(variable);
-    dag_.addNodeWithId(id);
-    return id;
-}
-
-gum::Arc GaussianBayesianNetwork::addArc(int varId1, int varId2, double weight){
-    auto arc = gum::Arc(varId1, varId2);
-    if (!arc_weights_.exists(arc) && weight != 0.){
-        arc_weights_.insert(arc, weight);
-        dag_.addArc(varId1, varId2);
-    }
-    return arc;
-}
-
-//void GaussianBayesianNetwork::setMu(int varId){
-    //scope_.setMu(varId);
 
 /* Comparison operator */
-/*Bool GaussianBayesianNetwork::*/
-/*operator==(const GaussianBayesianNetwork &other) const*/
-/*{*/
-  /*if (this == &other)*/
-    /*return true;*/
-  /*return dag_ == other.dag_;*/
-/*}*/
+Bool GaussianBayesianNetwork::
+operator==(const GaussianBayesianNetwork &other) const
+{
+  if (this == &other)
+    return true;
+  return (dag_ == other.dag_) &&
+         (marginals_ == other.marginals_) &&
+         (copulas_ == other.copulas_);
+}
 
-/*Bool GaussianBayesianNetwork::equals(*/
-  /*const DistributionImplementation &other) const*/
-/*{*/
-  /*const GaussianBayesianNetwork *p_other =*/
-    /*dynamic_cast<const GaussianBayesianNetwork *>(&other);*/
-  /*return p_other && (*this == *p_other);*/
-/*}*/
+Bool GaussianBayesianNetwork::equals(
+  const DistributionImplementation &other) const
+{
+  const GaussianBayesianNetwork *p_other =
+    dynamic_cast<const GaussianBayesianNetwork *>(&other);
+  return p_other && (*this == *p_other);
+}
 
 /* String converter */
-//String GaussianBayesianNetwork::__repr__() const
-//{
-  //OSS oss(true);
-  //oss << "class=" << GaussianBayesianNetwork::GetClassName()
-      //<< " name=" << getName() << " dimension=" << getDimension()
-      //<< " dag=" << dag_;
-  //return oss;
-//}
+String GaussianBayesianNetwork::__repr__() const
+{
+  OSS oss(true);
+  oss << "class=" << GaussianBayesianNetwork::GetClassName()
+      << " name=" << getName() << " dimension=" << getDimension()
+      << " dag=" << dag_ << " marginals=" << marginals_ << ", copulas=" << copulas_;
+  return oss;
+}
 
-//String GaussianBayesianNetwork::__str__(const String &offset) const
-//{
-  //OSS oss(false);
-  //oss << offset << getClassName() << "(dag=" << dag_;
-  //return oss;
-//}
+String GaussianBayesianNetwork::__str__(const String &offset) const
+{
+  OSS oss(false);
+  oss << offset << getClassName() << "(dag=" << dag_
+      << ", marginals=" << marginals_ << ", copulas=" << copulas_ << ")";
+  return oss;
+}
 
 /* Virtual constructor */
-//GaussianBayesianNetwork *GaussianBayesianNetwork::clone() const
-//{
-  //return new GaussianBayesianNetwork(*this);
-//}
+GaussianBayesianNetwork *GaussianBayesianNetwork::clone() const
+{
+  return new GaussianBayesianNetwork(*this);
+}
 
 /* Compute the numerical range of the distribution given the parameters values
  */
-//void GaussianBayesianNetwork::computeRange()
-//{
-  //const UnsignedInteger dimension = dag_.getSize();
-  //setDimension(dimension);
-  //Point lower(dimension);
-  //Point upper(dimension);
-  //for (UnsignedInteger i = 0; i < dimension; ++i)
-  //{
-    //const Interval rangeI(marginals_[i].getRange());
+void GaussianBayesianNetwork::computeRange()
+{
+  const UnsignedInteger dimension = dag_.getSize();
+  setDimension(dimension);
+  Point lower(dimension);
+  Point upper(dimension);
+  for (UnsignedInteger i = 0; i < dimension; ++i)
+  {
+    const Interval rangeI(marginals_[i].getRange());
     // Check if the current node is a root node
-    //lower[i] = rangeI.getLowerBound()[0];
-    //upper[i] = rangeI.getUpperBound()[0];
-  //} // i
-  //setRange(Interval(lower, upper));
-//}
+    lower[i] = rangeI.getLowerBound()[0];
+    upper[i] = rangeI.getUpperBound()[0];
+  } // i
+  setRange(Interval(lower, upper));
+}
 
 /* Get one realization of the distribution */
-//Point GaussianBayesianNetwork::getRealization() const
-//{
-  //const UnsignedInteger dimension = getDimension();
-  //Point result(dimension);
-  //const Indices order(dag_.getTopologicalOrder());
+Point GaussianBayesianNetwork::getRealization() const
+{
+  const UnsignedInteger dimension = getDimension();
+  Point result(dimension);
+  const Indices order(dag_.getTopologicalOrder());
 
   // The generation works this way:
   // + go through the nodes according to a topological order wrt the dag
@@ -163,192 +144,196 @@ gum::Arc GaussianBayesianNetwork::addArc(int varId1, int varId2, double weight){
   // + then map the copula realization into the actual realization using marginal
   //   quantiles
   // The generation of a copula realization
-  //for (UnsignedInteger i = 0; i < order.getSize(); ++i)
-  //{
-    //const UnsignedInteger globalI = order[i];
-    //const Indices parents(dag_.getParents(globalI));
-    //const UnsignedInteger conditioningDimension(parents.getSize());
-    //if (conditioningDimension == 0)
-    //{
-      //result[globalI] = RandomGenerator::Generate();
-    //}
-    //else
-    //{
-      //const Distribution copula(copulas_[globalI]);
-      //Point y(conditioningDimension);
-      //for (UnsignedInteger j = 0; j < conditioningDimension; ++j)
-        //y[j] = result[parents[j]];
-      //result[globalI] = copula.computeConditionalQuantile(
-                          //RandomGenerator::Generate(), y);
-    //}
-  //} // i
+  for (UnsignedInteger i = 0; i < order.getSize(); ++i)
+  {
+    const UnsignedInteger globalI = order[i];
+    const Indices parents(dag_.getParents(globalI));
+    const UnsignedInteger conditioningDimension(parents.getSize());
+    if (conditioningDimension == 0)
+    {
+      result[globalI] = RandomGenerator::Generate();
+    }
+    else
+    {
+      const Distribution copula(copulas_[globalI]);
+      Point y(conditioningDimension);
+      for (UnsignedInteger j = 0; j < conditioningDimension; ++j)
+        y[j] = result[parents[j]];
+      result[globalI] = copula.computeConditionalQuantile(
+                          RandomGenerator::Generate(), y);
+    }
+  } // i
   // The generation of the actual realization
-  //for (UnsignedInteger i = 0; i < order.getSize(); ++i)
-  //{
+  for (UnsignedInteger i = 0; i < order.getSize(); ++i)
+  {
     // No need to follow the topological order here
-    //result[i] = marginals_[i].computeScalarQuantile(result[i]);
-  //} // i
-  //return result;
-//}
+    result[i] = marginals_[i].computeScalarQuantile(result[i]);
+  } // i
+  return result;
+}
 
 /* Get the PDF of the distribution */
-//Scalar GaussianBayesianNetwork::computePDF(const Point &point) const
-//{
-  //const Indices order(dag_.getTopologicalOrder());
-  //Scalar pdf = 1.0;
+Scalar GaussianBayesianNetwork::computePDF(const Point &point) const
+{
+  const Indices order(dag_.getTopologicalOrder());
+  Scalar pdf = 1.0;
   // First compute the marginal part
-  //for (UnsignedInteger i = 0; i < order.getSize(); ++i)
-  //{
-    //pdf *= marginals_[i].computePDF(point[i]);
-    //if (pdf <= 0.0) return 0.0;
-  //} // i
+  for (UnsignedInteger i = 0; i < order.getSize(); ++i)
+  {
+    pdf *= marginals_[i].computePDF(point[i]);
+    if (pdf <= 0.0) return 0.0;
+  } // i
   // Second, compute the copula part
   // a) map the given point into the copula space
-  //Point u(order.getSize());
-  //for (UnsignedInteger i = 0; i < order.getSize(); ++i)
-  //{
+  Point u(order.getSize());
+  for (UnsignedInteger i = 0; i < order.getSize(); ++i)
+  {
     // To avoid points exactly at the upper boundary of the support
-    //u[i] = std::min(1.0 - SpecFunc::ScalarEpsilon, marginals_[i].computeCDF(point[i]));
-  //} // i
+    u[i] = std::min(1.0 - SpecFunc::ScalarEpsilon, marginals_[i].computeCDF(point[i]));
+  } // i
   // b) compute the copula PDF
-  //for (UnsignedInteger i = 0; i < order.getSize(); ++i)
-  //{
-    //const UnsignedInteger globalI = order[i];
-    //const Indices parents(dag_.getParents(globalI));
-    //const UnsignedInteger conditioningDimension(parents.getSize());
-    //const Scalar x = u[globalI];
-    //if (conditioningDimension > 0)
-    //{
-      //Point y(conditioningDimension);
-      //for (UnsignedInteger j = 0; j < conditioningDimension; ++j)
-        //y[j] = u[parents[j]];
-      //const Scalar conditionalPDF =
-        //copulas_[globalI].computeConditionalPDF(x, y);
-      //pdf *= conditionalPDF;
-      //if (!(pdf > 0.0)) return 0.0;
-    //}
-  //} // i
-  //return pdf;
-//}
+  for (UnsignedInteger i = 0; i < order.getSize(); ++i)
+  {
+    const UnsignedInteger globalI = order[i];
+    const Indices parents(dag_.getParents(globalI));
+    const UnsignedInteger conditioningDimension(parents.getSize());
+    const Scalar x = u[globalI];
+    if (conditioningDimension > 0)
+    {
+      Point y(conditioningDimension);
+      for (UnsignedInteger j = 0; j < conditioningDimension; ++j)
+        y[j] = u[parents[j]];
+      const Scalar conditionalPDF =
+        copulas_[globalI].computeConditionalPDF(x, y);
+      pdf *= conditionalPDF;
+      if (!(pdf > 0.0)) return 0.0;
+    }
+  } // i
+  return pdf;
+}
 
 /* Get the log-PDF of the distribution */
-/*Scalar GaussianBayesianNetwork::computeLogPDF(const Point &point) const*/
-/*{*/
-  /*const Indices order(dag_.getTopologicalOrder());*/
-  /*Scalar logPDF = 0.0;*/
-  /*// First compute the marginal part*/
-  /*for (UnsignedInteger i = 0; i < order.getSize(); ++i)*/
-  /*{*/
-    /*const Scalar marginalLogPDF = marginals_[i].computeLogPDF(point[i]);*/
-    /*if (marginalLogPDF == -SpecFunc::MaxScalar)*/
-        /*return -SpecFunc::MaxScalar;*/
-    /*logPDF += marginalLogPDF;*/
-  /*} // i*/
-  /*// Second, compute the copula part*/
-  /*// a) map the given point into the copula space*/
-  /*Point u(order.getSize());*/
-  /*for (UnsignedInteger i = 0; i < order.getSize(); ++i)*/
-  /*{*/
-    /*// To avoid points exactly at the upper boundary of the support*/
-    /*u[i] = std::min(1.0 - SpecFunc::ScalarEpsilon, marginals_[i].computeCDF(point[i]));*/
-  /*} // i*/
-  /*// b) compute the copula PDF*/
-  /*for (UnsignedInteger i = 0; i < order.getSize(); ++i)*/
-  /*{*/
-    /*const UnsignedInteger globalI = order[i];*/
-    /*const Indices parents(dag_.getParents(globalI));*/
-    /*const UnsignedInteger conditioningDimension(parents.getSize());*/
-    /*const Scalar x = u[globalI];*/
-    /*if (conditioningDimension > 0)*/
-    /*{*/
-      /*Point y(conditioningDimension);*/
-      /*for (UnsignedInteger j = 0; j < conditioningDimension; ++j)*/
-        /*y[j] = u[parents[j]];*/
-      /*const Scalar conditionalPDF =*/
-        /*copulas_[globalI].computeConditionalPDF(x, y);*/
-      /*if (!(conditionalPDF > 0.0))*/
-        /*return -SpecFunc::MaxScalar;*/
-      /*logPDF += std::log(conditionalPDF);*/
-    /*}*/
-  /*} // i*/
-  /*return logPDF;*/
-/*}*/
+Scalar GaussianBayesianNetwork::computeLogPDF(const Point &point) const
+{
+  const Indices order(dag_.getTopologicalOrder());
+  Scalar logPDF = 0.0;
+  // First compute the marginal part
+  for (UnsignedInteger i = 0; i < order.getSize(); ++i)
+  {
+    const Scalar marginalLogPDF = marginals_[i].computeLogPDF(point[i]);
+    if (marginalLogPDF == -SpecFunc::MaxScalar)
+        return -SpecFunc::MaxScalar;
+    logPDF += marginalLogPDF;
+  } // i
+  // Second, compute the copula part
+  // a) map the given point into the copula space
+  Point u(order.getSize());
+  for (UnsignedInteger i = 0; i < order.getSize(); ++i)
+  {
+    // To avoid points exactly at the upper boundary of the support
+    u[i] = std::min(1.0 - SpecFunc::ScalarEpsilon, marginals_[i].computeCDF(point[i]));
+  } // i
+  // b) compute the copula PDF
+  for (UnsignedInteger i = 0; i < order.getSize(); ++i)
+  {
+    const UnsignedInteger globalI = order[i];
+    const Indices parents(dag_.getParents(globalI));
+    const UnsignedInteger conditioningDimension(parents.getSize());
+    const Scalar x = u[globalI];
+    if (conditioningDimension > 0)
+    {
+      Point y(conditioningDimension);
+      for (UnsignedInteger j = 0; j < conditioningDimension; ++j)
+        y[j] = u[parents[j]];
+      const Scalar conditionalPDF =
+        copulas_[globalI].computeConditionalPDF(x, y);
+      if (!(conditionalPDF > 0.0))
+        return -SpecFunc::MaxScalar;
+      logPDF += std::log(conditionalPDF);
+    }
+  } // i
+  return logPDF;
+}
 
-/*[> DAG, marginals and copulas accessor <]*/
-/*void GaussianBayesianNetwork::setDAGAndMarginalsAndCopulas(const NamedDAG &dag,*/
-    /*const DistributionCollection &marginals,*/
-    /*const DistributionCollection & copulas)*/
-/*{*/
-  /*const Indices order(dag.getTopologicalOrder());*/
-  /*const UnsignedInteger size = order.getSize();*/
-  /*if (marginals.getSize() != size) throw InvalidArgumentException(HERE) << "Error: expected a collection of marginals of size=" << size << ", got size=" << marginals.getSize();*/
-  /*if (copulas.getSize() != size) throw InvalidArgumentException(HERE) << "Error: expected a collection of copulas of size=" << size << ", got size=" << copulas.getSize();*/
-  /*for (UnsignedInteger i = 0; i < order.getSize(); ++i)*/
-  /*{*/
-    /*const UnsignedInteger globalIndex = order[i];*/
-    /*if (copulas[globalIndex].getDimension() != dag.getParents(globalIndex).getSize() + 1)*/
-      /*throw InvalidArgumentException(HERE)*/
-          /*<< "Error: expected a copula of dimension="*/
-          /*<< dag.getParents(globalIndex).getSize() + 1 << " for node=" << globalIndex*/
-          /*<< " and its parents=" << dag.getParents(globalIndex)*/
-          /*<< ", got dimension=" << copulas[globalIndex].getDimension();*/
-  /*}*/
-  /*dag_ = dag;*/
-  /*marginals_ = marginals;*/
-  /*copulas_ = copulas;*/
-  /*computeRange();*/
-  /*setDescription(dag.getDescription());*/
-/*}*/
+/* DAG, marginals and copulas accessor */
+void GaussianBayesianNetwork::setDAGAndMarginalsAndCopulas(const NamedDAG &dag,
+    const DistributionCollection &marginals,
+    const DistributionCollection & copulas)
+{
+  const Indices order(dag.getTopologicalOrder());
+  const UnsignedInteger size = order.getSize();
+  if (marginals.getSize() != size) throw InvalidArgumentException(HERE) << "Error: expected a collection of marginals of size=" << size << ", got size=" << marginals.getSize();
+  if (copulas.getSize() != size) throw InvalidArgumentException(HERE) << "Error: expected a collection of copulas of size=" << size << ", got size=" << copulas.getSize();
+  for (UnsignedInteger i = 0; i < order.getSize(); ++i)
+  {
+    const UnsignedInteger globalIndex = order[i];
+    if (copulas[globalIndex].getDimension() != dag.getParents(globalIndex).getSize() + 1)
+      throw InvalidArgumentException(HERE)
+          << "Error: expected a copula of dimension="
+          << dag.getParents(globalIndex).getSize() + 1 << " for node=" << globalIndex
+          << " and its parents=" << dag.getParents(globalIndex)
+          << ", got dimension=" << copulas[globalIndex].getDimension();
+  }
+  dag_ = dag;
+  marginals_ = marginals;
+  copulas_ = copulas;
+  computeRange();
+  setDescription(dag.getDescription());
+}
 
-/*gum::DAG GaussianBayesianNetwork::getDAG() const*/
-/*{*/
-  /*return dag_.getDAG();*/
-/*}*/
+gum::DAG GaussianBayesianNetwork::getDAG() const
+{
+  return dag_.getDAG();
+}
 
-/*Indices GaussianBayesianNetwork::getParents(const UnsignedInteger nodeId) const*/
-/*{*/
-    /*return dag_.getParents(nodeId);*/
-/*}*/
+Indices GaussianBayesianNetwork::getParents(const UnsignedInteger nodeId) const
+{
+    return dag_.getParents(nodeId);
+}
 
-/*GaussianBayesianNetwork::DistributionCollection*/
-/*GaussianBayesianNetwork::getMarginals() const*/
-/*{*/
-  /*return marginals_;*/
-/*}*/
+GaussianBayesianNetwork::DistributionCollection
+GaussianBayesianNetwork::getMarginals() const
+{
+  return marginals_;
+}
 
-/*Distribution*/
-/*GaussianBayesianNetwork::getMarginal(const UnsignedInteger i) const*/
-/*{*/
-  /*if (i >= marginals_.getSize()) throw InvalidArgumentException(HERE) << "The index of a marginal distribution must be in the range [0, dim-1]";*/
-  /*return marginals_[i];*/
-/*}*/
+Distribution
+GaussianBayesianNetwork::getMarginal(const UnsignedInteger i) const
+{
+  if (i >= marginals_.getSize()) throw InvalidArgumentException(HERE) << "The index of a marginal distribution must be in the range [0, dim-1]";
+  return marginals_[i];
+}
 
-/*Distribution*/
-/*GaussianBayesianNetwork::getCopulaAtNode(const UnsignedInteger i) const*/
-/*{*/
-  /*if (i >= copulas_.getSize()) throw InvalidArgumentException(HERE) << "The index of a copula distribution must be in the range [0, dim-1]";*/
-  /*return copulas_[i];*/
-/*}*/
+Distribution
+GaussianBayesianNetwork::getCopulaAtNode(const UnsignedInteger i) const
+{
+  if (i >= copulas_.getSize()) throw InvalidArgumentException(HERE) << "The index of a copula distribution must be in the range [0, dim-1]";
+  return copulas_[i];
+}
 
-/*GaussianBayesianNetwork::DistributionCollection*/
-/*GaussianBayesianNetwork::getCopulas() const*/
-/*{*/
-  /*return copulas_;*/
-/*}*/
+GaussianBayesianNetwork::DistributionCollection
+GaussianBayesianNetwork::getCopulas() const
+{
+  return copulas_;
+}
 
 /* Method save() stores the object through the StorageManager */
-//void GaussianBayesianNetwork::save(Advocate &adv) const
-//{
-  //ContinuousDistribution::save(adv);
-  //adv.saveAttribute("dag_", dag_);
-//}
+void GaussianBayesianNetwork::save(Advocate &adv) const
+{
+  ContinuousDistribution::save(adv);
+  adv.saveAttribute("dag_", dag_);
+  adv.saveAttribute("marginals_", marginals_);
+  adv.saveAttribute("copulas_", copulas_);
+}
 
 /* Method load() reloads the object from the StorageManager */
-//void GaussianBayesianNetwork::load(Advocate &adv)
-//{
-  //ContinuousDistribution::load(adv);
-  //adv.loadAttribute("dag_", dag_);
-  //computeRange();
-//}
+void GaussianBayesianNetwork::load(Advocate &adv)
+{
+  ContinuousDistribution::load(adv);
+  adv.loadAttribute("dag_", dag_);
+  adv.loadAttribute("marginals_", marginals_);
+  adv.loadAttribute("copulas_", copulas_);
+  computeRange();
+}
 
 } // namespace OTAGRUM

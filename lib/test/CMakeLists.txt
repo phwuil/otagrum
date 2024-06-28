@@ -83,6 +83,7 @@ ot_check_test ( ContinuousMIIC_std )
 ot_check_test ( TabuList_std )
 ot_check_test ( ContinuousBayesianNetwork_std )
 ot_check_test ( GaussianVariable_std )
+ot_check_test ( GaussianBayesianNetworkFactory_std )
 ot_check_test ( VariableNodeMap_std )
 ot_check_test ( OTAgrumResourceMap_std )
 

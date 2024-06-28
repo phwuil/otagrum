@@ -166,6 +166,16 @@ namespace OTAGRUM {
     _names2nodes_.insert(new_name, id);
   }
 
+  void VariableNodeMap::changeMu(gum::NodeId id, double new_mu) {
+    auto var = const_cast< GaussianVariable* >(_nodes2vars_.second(id));
+    var->setMu(new_mu);
+  }
+
+  void VariableNodeMap::changeSigma(gum::NodeId id, double new_sigma) {
+    auto var = const_cast< GaussianVariable* >(_nodes2vars_.second(id));
+    var->setSigma(new_sigma);
+  }
+
   const std::string& VariableNodeMap::name(gum::NodeId id) const {
     return _names2nodes_.first(id);
   }

@@ -38,7 +38,7 @@ namespace OTAGRUM {
   class VariableNodeMap {
     public:
     // Default constructor
-    VariableNodeMap();
+    VariableNodeMap() = default;
 
     // Copy constructor
     // Proceed a deep copy: all variables are copied but keep the same node id.
@@ -88,6 +88,8 @@ namespace OTAGRUM {
     /* @throws DuplicateLabel if this name already exists
      * @throws NotFound Raised if no nodes matches id. */
     void changeName(gum::NodeId id, const std::string& new_name);
+    void changeMu(gum::NodeId id, double new_mu);
+    void changeSigma(gum::NodeId id, double new_sigma);
 
     // removes all the associations
     void clear();

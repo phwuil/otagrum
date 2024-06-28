@@ -71,6 +71,7 @@ ot_add_python_module (${PACKAGE_NAME} ${PACKAGE_NAME}_module.i otagrum_agrum.i
                       JunctionTreeBernsteinCopulaFactory.i JunctionTreeBernsteinCopulaFactory_doc.i
                       ContinuousBayesianNetwork.i ContinuousBayesianNetwork_doc.i
                       GaussianVariable.i GaussianVariable_doc.i
+                      VariableNodeMap.i VariableNodeMap_doc.i
                       #GaussianBayesianNetwork.i GaussianBayesianNetwork_doc.i
                       #GaussianInference.i GaussianInference_doc.i
                       ContinuousBayesianNetworkFactory.i ContinuousBayesianNetworkFactory_doc.i

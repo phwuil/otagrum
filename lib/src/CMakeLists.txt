@@ -2,7 +2,7 @@
 
 ot_add_current_dir_to_include_dirs ()
 
-#ot_add_source_file ( GaussianBayesianNetwork.cxx )
+ot_add_source_file ( GaussianBayesianNetworkFactory.cxx )
 #ot_add_source_file ( CanonicalForm.cxx )
 ot_add_source_file ( GaussianVariable.cxx )
 ot_add_source_file ( VariableNodeMap.cxx )
@@ -26,7 +26,7 @@ ot_add_source_file ( JunctionTreeBernsteinCopula.cxx )
 ot_add_source_file ( JunctionTreeBernsteinCopulaFactory.cxx )
 ot_add_source_file ( OTAgrumResourceMap.cxx )
 
-#ot_install_header_file ( GaussianBayesianNetwork.hxx )
+ot_install_header_file ( GaussianBayesianNetworkFactory.hxx )
 #ot_install_header_file ( CanonicalForm.hxx )
 ot_install_header_file ( GaussianVariable.hxx )
 ot_install_header_file ( VariableNodeMap.hxx )

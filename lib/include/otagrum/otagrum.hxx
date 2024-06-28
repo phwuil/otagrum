@@ -35,7 +35,7 @@
 #include "otagrum/JunctionTreeBernsteinCopulaFactory.hxx"
 #include "otagrum/GaussianVariable.hxx"
 #include "otagrum/VariableNodeMap.hxx"
-//#include "otagrum/GaussianBayesianNetwork.hxx"
+#include "otagrum/GaussianBayesianNetworkFactory.hxx"
 //#include "otagrum/GaussianInference.hxx"
 #include "otagrum/ContinuousBayesianNetwork.hxx"
 #include "otagrum/ContinuousBayesianNetworkFactory.hxx"
