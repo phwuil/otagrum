@@ -7,10 +7,13 @@
 
 using namespace std;
 
+namespace OTAGRUM {
+
 Scope::Scope(std::initializer_list<GaussianVariable> l): _variables_(l),
-                                                           _size_(l.size()){
-    sort(this->_variables_.begin(), this->_variables_.end());
-}
+                                                         _size_(l.size()) {}
+
+Scope::Scope(vector<GaussianVariable>& variables): _variables_(variables),
+                                                   _size_(variables.size()){}
 
 
 bool Scope::contains(const GaussianVariable& item) const {
@@ -22,32 +25,37 @@ bool Scope::contains(const GaussianVariable& item) const {
     }
 }
 
-int Scope::addVariable(GaussianVariable variable){
-    if(this->contains(variable)){
-        return -1;
-    } // Si la variable est déjà dans le scope on retourne -1
-
-
-    auto it = _variables_.insert (
-                  std::upper_bound(_variables_.begin(), _variables_.end(), variable),
-                  variable
-              );
-
-    int position = it - _variables_.begin();
-    
-    _size_++;
-
-    return position;
+void Scope::addVariable(GaussianVariable variable){
+    if(!contains(variable)) {
+        _variables_.push_back(variable);
+        _size_++;
+    }
 }
 
-Scope::Scope(vector<GaussianVariable>& variables): _variables_(variables),
-                                                     _size_(variables.size()){
-    sort(this->_variables_.begin(), this->_variables_.end());
+void Scope::addVariables(vector<GaussianVariable> variables){
+    for(const auto& variable: variables){
+        addVariable(variable);
+    }
 }
+
+void Scope::addVariable(GaussianVariable variable, unsigned int pos){
+    if(!contains(variable)) {
+        _variables_.insert(_variables_.begin() + pos, variable);
+        _size_++;
+    }
+}
+
+void Scope::eraseVariable(GaussianVariable variable){
+    auto it = find(_variables_.begin(), _variables_.end(), variable);
+    if(it != _variables_.end()){
+        _variables_.erase(it);
+    }
+}
+
 
 ostream& operator<<(ostream& os, const Scope& item){
     if(item._variables_.empty()){
-        os << "[]" << endl;
+        os << "[]";
     }
     else{
         os << "[";
@@ -63,8 +71,13 @@ ostream& operator<<(ostream& os, const Scope& item){
 
 Scope& Scope::operator+=(const Scope &rhs){
     for(auto x : rhs._variables_){
-        this->addVariable(x);
+        addVariable(x);
     }
+    return *this;
+}
+
+Scope& Scope::operator+=(const GaussianVariable &variable){
+    addVariable(variable);
     return *this;
 }
 
@@ -75,14 +88,17 @@ Scope operator+(const Scope &lhs, const Scope &rhs){
 }
 
 Scope& Scope::operator-=(const Scope &rhs){
-    for(auto x : rhs._variables_){
-        auto it = find(_variables_.begin(), _variables_.end(), x);
-        if(it != _variables_.end()){
-            _variables_.erase(it);
-        }
+    for(auto var : rhs._variables_){
+        eraseVariable(var);
     }
     return *this;
 }
+
+Scope& Scope::operator-=(const GaussianVariable &variable){
+    eraseVariable(variable);
+    return *this;
+}
+
 Scope operator-(const Scope &lhs, const Scope &rhs){
     Scope diff = lhs;
     diff -= rhs;
@@ -96,3 +112,5 @@ bool operator==(const Scope &lhs, const Scope &rhs){
 bool operator!=(const Scope &lhs, const Scope &rhs){
     return !(lhs == rhs);
 }
+
+} //namespace OTAGRUM

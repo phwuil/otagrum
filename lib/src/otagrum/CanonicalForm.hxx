@@ -4,20 +4,20 @@
 #include <iostream>
 #include <map>
 #include <cmath>
+
 #include <Eigen/Dense>
 #include <agrum/tools/core/hashTable.h>
-#include <agrum/tools/variables/labelizedVariable.h>
+#include <agrum/tools/core/sequence.h>
 
-class CanonicalForm;
+#include "otagrum/GaussianVariable.hxx"
 #include "otagrum/Scope.hxx"
-#include "otagrum/Gaussian.hxx"
-#include "otagrum/ConditionalLinearGaussian.hxx"
 
-typedef std::vector<std::pair<GaussianVariable, double> > ContinuousEvidence;
-typedef std::vector<std::pair<gum::LabelizedVariable*, std::string> > DiscreteEvidence;
+
+namespace OTAGRUM {
 
 class CanonicalForm {
-    friend class Gaussian;
+    using ContinuousEvidence = std::vector<std::pair<GaussianVariable, double> >;
+    //using Scope = gum::Sequence< GaussianVariable >;
 
     friend std::ostream& operator<<(std::ostream& os, const CanonicalForm& item);
 
@@ -40,13 +40,18 @@ class CanonicalForm {
     public:
         // Constructeurs
         CanonicalForm() = default;
-        CanonicalForm(Gaussian G);
-        CanonicalForm(LinearGaussian LG);
-        CanonicalForm(double p): lp(std::log(p)) {}
         CanonicalForm(Scope scope,
                       Eigen::MatrixXd K,
                       Eigen::VectorXd h,
-                      double g): scope(scope), K(K), h(h), g(g) {}
+                      double g): _scope_(scope), _K_(K), _h_(h), _g_(g) {}
+
+        // Constructor from parameters of a 1D Gaussian
+        explicit CanonicalForm(GaussianVariable variable);
+
+        // Constructor from parameters of a 1D conditional linear Gaussian
+        CanonicalForm(GaussianVariable variable,
+                      std::vector<GaussianVariable> parents,
+                      std::vector<double> weights);
 
         // Constructeur de move
         CanonicalForm(CanonicalForm &&item) = default;
@@ -61,38 +66,41 @@ class CanonicalForm {
         // Destructeur
         ~CanonicalForm() {};
 
-        CanonicalForm& operator+=(const CanonicalForm &rhs);
-        CanonicalForm& operator-=(const CanonicalForm &rhs);
+        //CanonicalForm& operator+=(const CanonicalForm &rhs);
+        //CanonicalForm& operator-=(const CanonicalForm &rhs);
         CanonicalForm& operator*=(CanonicalForm rhs);
         CanonicalForm& operator/=(CanonicalForm rhs);
 
         // Accesseurs
-        Scope getScope() const {return scope;}
-        Eigen::MatrixXd getK() const {return K;}
-        Eigen::VectorXd getH() const {return h;}
-        double getG() const {return g;}
-        double getLp() const {return lp;}
+        const unsigned int getSize() const {return _scope_.getSize();}
+        Scope getScope() const {return _scope_;}
+        Eigen::MatrixXd getK() const {return _K_;}
+        Eigen::VectorXd getH() const {return _h_;}
+        double getG() const {return _g_;}
 
-        CanonicalForm addVariable(GaussianVariable variable);
-        CanonicalForm addVariables(const Scope scope);
+        CanonicalForm extend(GaussianVariable variable, unsigned int pos);
+        CanonicalForm extend(GaussianVariable variable);
+        CanonicalForm extend(const Scope scope);
+        void permute(const std::vector<int>& permutation);
         CanonicalForm marginal(const Scope summed_scope) const;
         CanonicalForm reduce(ContinuousEvidence evidence);
         
     private:
-        Scope scope;
-        Eigen::MatrixXd K;
-        Eigen::VectorXd h;
-        double g = 0.;
-        double lp = 0.;
+        std::vector<int> _findPermutation_(const Scope& scope1, const Scope& scope2);
+        void _permuteK_(const std::vector<int>& permutation);
+        void _permuteH_(const std::vector<int>& permutation);
 
-        void permute_K(Eigen::VectorXi permutation);
-        void permute_h(Eigen::VectorXi permutation);
+        Scope _scope_;
+        Eigen::MatrixXd _K_;
+        Eigen::VectorXd _h_;
+        double _g_ = 0.;
+
 };
 
 std::ostream& operator<<(std::ostream& os, const CanonicalForm& item);
 
-CanonicalForm operator+(const CanonicalForm &lhs, const CanonicalForm &rhs);
-CanonicalForm operator-(const CanonicalForm &lhs, const CanonicalForm &rhs);
+//CanonicalForm operator+(const CanonicalForm &lhs, const CanonicalForm &rhs);
+//CanonicalForm operator-(const CanonicalForm &lhs, const CanonicalForm &rhs);
 CanonicalForm operator*(const CanonicalForm &lhs, const CanonicalForm &rhs);
 CanonicalForm operator/(const CanonicalForm &lhs, const CanonicalForm &rhs);
 
@@ -103,44 +111,6 @@ bool operator<=(const CanonicalForm &lhs, const CanonicalForm &rhs);
 bool operator>(const CanonicalForm &lhs, const CanonicalForm &rhs);
 bool operator>=(const CanonicalForm &lhs, const CanonicalForm &rhs);
 
-/*namespace gum {*/
-    /*template <> class HashFunc<CanonicalForm> : public*/
-    /*HashFuncBase<CanonicalForm> {*/
-        /*public:*/
-            /*Size operator()(const CanonicalForm &key) const {*/
-                /*auto variables = key.getScope().getVariables();*/
-                /*auto matrix = key.getK();*/
-                /*auto vector = key.getH();*/
-                /*auto constant = key.getG();*/
-                /*auto proba = key.getLp();*/
-
-                /*if(variables.empty()){*/
-                    /*//return (Size(constant)*HashFuncConst::gold) & this->_hash_mask;*/
-                    /*return (Size(proba)*HashFuncConst::gold) & this->hash_mask_;*/
-                /*}*/
-                /*else {*/
-                    /*double result = 0.;*/
-                    /*for(auto it = variables.begin(); it != variables.end(); ++it){*/
-                        /*result += std::stod(it->getName());*/
-                        /*result *= HashFuncConst::gold;*/
-                    /*}*/
-                    /*for(auto x : matrix.reshaped()){*/
-                        /*result += x;*/
-                        /*result *= HashFuncConst::gold;*/
-                    /*}*/
-                    /*for(auto x : vector){*/
-                        /*result += x;*/
-                        /*result *= HashFuncConst::gold;*/
-                    /*}*/
-                    /*result += constant;*/
-                    /*result *= HashFuncConst::gold;*/
-                    /*result += proba;*/
-                    /*result *= HashFuncConst::gold;*/
-
-                    /*return Size(result) & this->hash_mask_;*/
-                /*}*/
-            /*}*/
-    /*};*/
-/*}*/
+} // namespace OTAGRUM
 
 #endif // CANONICAL_FORM_H

@@ -21,6 +21,7 @@
  */
 
 #include "otagrum/GaussianBayesianNetworkFactory.hxx"
+#include <openturns/Normal.hxx>
 #include <cmath>
 
 namespace OTAGRUM
@@ -79,8 +80,26 @@ std::ostream& operator<<(std::ostream& output, const GaussianBayesianNetworkFact
     return output;
 }
 
-//GaussianBayesianNetwork GaussianBayesianNetworkFactory::build() {
-    //return;
+//GaussianBayesianNetwork GaussianBayesianNetworkFactory::buildAsGaussianBayesianNetwork() const {
+
 //}
+
+GaussianBayesianNetwork GaussianBayesianNetworkFactory::buildAsGaussianBayesianNetwork() const {
+    DistributionCollection distributions;
+    auto names = std::vector<std::string>();
+    for (const auto nodeId : _dag_.nodes()) {
+        std::cout << "NodeId : " << nodeId << std::endl;
+        names.push_back(_varMap_.name(nodeId));
+        std::cout << "Node name : " << _varMap_.name(nodeId) << std::endl;
+
+        auto mu = _varMap_[nodeId].getMu();
+        auto sigma = _varMap_[nodeId].getSigma();
+
+        distributions.add(OT::Normal(mu, sigma));
+    }
+    //std::cout << "Distributions : " << distributions << std::endl;
+    NamedDAG ndag = NamedDAG(_dag_, names); 
+    return GaussianBayesianNetwork(ndag, distributions);
+}
 
 } // namespace OTAGRUM

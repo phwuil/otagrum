@@ -39,11 +39,19 @@ class OTAGRUM_API NamedDAG : public OT::PersistentObject
   CLASSNAME
 
 public:
-  NamedDAG();
+
+  // Default constructor
+  NamedDAG() = default;
+
+  // Constructor from gum::BayesNet
   explicit NamedDAG(const gum::BayesNet<double> &bn);
+
+  // Parameter constructor
   NamedDAG(const gum::DAG &dag, const std::vector<std::string> &names);
 
+
   OT::PersistentObject *clone() const override;
+
 
   OT::UnsignedInteger getSize() const;
   OT::Description getDescription() const;

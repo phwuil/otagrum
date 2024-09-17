@@ -1,6 +1,6 @@
 //                                               -*- C++ -*-
 /**
- *  @brief The GaussianBayesianNetwork distribution
+ *  @brief The GaussianInference algorithm
  *
  *  Copyright 2010-2024 Airbus-LIP6-Phimeca
  *
@@ -45,23 +45,30 @@ namespace OTAGRUM
 /**
  * @class GaussianBayesianNetwork
  *
- * The GaussianBayesianNetwork structure.
+ * The GaussianInference that uses a variable elimination algorithm to make
+ * inference in a GBN.
  */
 class GaussianInference {
 
 public:
 
   /** Constructor */
-  GaussianInference(GaussianBayesianNetwork gbn): _gbn_(gbn) {};
+  explicit GaussianInference(GaussianBayesianNetwork gbn);
 
   
   //CanonicalForm getPosterior(
           //std::vector<GaussianVariable> &variables,
           //ContinuousEvidence &evidence);
   
+  std::string toString() const;
 
 
 private:
+
+  /**
+   * @brief Build the CanonicalForms based on the GBN
+   */
+  void _buildCanonicalForms_();
 
   /**
    * @brief Eliminate a continuous variable from a set of potentials
@@ -70,9 +77,9 @@ private:
    * @param variable The continuous variable to remove
    */
 
-    void _sum_product_eliminate_var_(
-          std::vector< CanonicalForm > &cf_set,
-          GaussianVariable &variable);
+    //void _SumProductEliminateVar_(
+          //std::vector< CanonicalForm > &cf_set,
+          //GaussianVariable &variable);
 
   /**
    * @brief Variable elimination sum-product algorithm for CLGs
@@ -83,18 +90,22 @@ private:
    *
    * @return The resulting product of potentials
    */
-  CanonicalForm _sum_product_ve_(
-          std::vector<GaussianVariable> &elim_order,
-          ContinuousEvidence &evidence,
-          std::vector< CanonicalForm > cf_set);
+  //CanonicalForm _SumProductVE_(
+          //std::vector<GaussianVariable> &elim_order,
+          //ContinuousEvidence &evidence,
+          //std::vector< CanonicalForm > cf_set);
 
     //gum::JunctionTree _buildJunctionTreeFromUndiGraph_(const gum::UndiGraph& g) const;
     //gum::JunctionTree _buildJunctionTreeFromDAG_(const gum::DAG& dag) const;
-    std::vector< gum::NodeId > _findEliminationOrder_(const gum::UndiGraph& g) const;
+    //std::vector< gum::NodeId > _findEliminationOrder_(const gum::UndiGraph& g) const;
     std::vector< CanonicalForm > _cf_set_;
 
     GaussianBayesianNetwork _gbn_;
+    gum::Sequence < gum::NodeId > _cf_topo_order_; // The topological order used to construct the canonical forms
+    gum::NodeProperty < CanonicalForm > _cf_map_;
 }; /* class GaussianBayesianNetwork */
+
+std::ostream& operator<<(std::ostream& output, const GaussianInference& GI);
 
 
 } /* namespace OTAGRUM */

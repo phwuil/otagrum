@@ -22,11 +22,13 @@
 #define OTAGRUM_GAUSSIANBAYESIANNETWORKFACTORY_HXX
 
 //#include <openturns/ContinuousDistribution.hxx>
-//#include <openturns/Distribution.hxx>
+#include <openturns/Distribution.hxx>
+#include <openturns/Normal.hxx>
 
 #include "otagrum/NamedDAG.hxx"
 #include "otagrum/GaussianVariable.hxx"
 #include "otagrum/VariableNodeMap.hxx"
+#include "otagrum/GaussianBayesianNetwork.hxx"
 #include "otagrum/otagrumprivate.hxx"
 
 namespace OTAGRUM
@@ -40,6 +42,9 @@ namespace OTAGRUM
 class GaussianBayesianNetworkFactory
 {
 public:
+
+    using DistributionCollection = OT::Collection< OT::Distribution >;
+    using DistributionPersistentCollection = OT::PersistentCollection< OT::Distribution >;
 
 
   /** Default constructor */
@@ -60,7 +65,8 @@ public:
   void changeSigma(gum::NodeId varId, double sigma);
   double getSigma(gum::NodeId varId);
 
-  //GaussianBayesianNetwork build();
+  GaussianBayesianNetwork buildAsGaussianBayesianNetwork() const;
+  OT::Normal buildAsNormalDistribution() const;
 
 private:
   VariableNodeMap _varMap_;

@@ -37,7 +37,6 @@ CLASSNAMEINIT(NamedDAG);
 
 static const Factory<NamedDAG> Factory_NamedDAG;
 
-NamedDAG::NamedDAG() {};
 NamedDAG::NamedDAG(const gum::BayesNet<double> &bn)
   : dag_(bn.dag()), map_(bn.size())
 {

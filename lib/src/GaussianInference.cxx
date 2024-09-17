@@ -34,9 +34,46 @@ namespace OTAGRUM
 {
 
 /* Default constructor */
-//GaussianInference::GaussianInference(GaussianBayesianNetwork GBN)
-//{
-//}
+GaussianInference::GaussianInference(GaussianBayesianNetwork GBN)
+  : _gbn_(GBN)
+  , _cf_topo_order_(GBN.getTopologicalOrder())
+{
+    _buildCanonicalForms_();
+}
+
+void GaussianInference::_buildCanonicalForms_() {
+    for(const auto nid: _cf_topo_order_) {
+        auto variable = _gbn_.getVariable(nid);
+        auto parents_id = _gbn_.getParents(nid);
+        vector<GaussianVariable> parents;
+        for(const auto pid: parents_id){
+            parents.push_back(_gbn_.getVariable(pid));
+        }
+
+        auto mu = _gbn_.getMu(nid);
+        auto sigma  = _gbn_.getSigma(nid);
+
+        auto cf = CanonicalForm();
+
+        std::cout << "Node Id : " << nid << std::endl;
+        if(parents.size() == 0) {
+            std::cout << "Empty ! " << std::endl;
+            cf = CanonicalForm(variable);
+            std::cout << "CF : " << cf << std::endl;
+        }
+        else if (parents.size() > 0) {
+            std::cout << "Not empty ! " << std::endl;
+            std::vector < double > weights;
+            for(const auto pid: parents_id){
+                weights.push_back(_gbn_.getWeight(pid, nid));
+            }
+            std::cout << "Weights : " << weights << std::endl;
+            cf = CanonicalForm(variable, parents, weights);
+        }
+        _cf_map_.insert(nid, cf);
+    }
+    std::cout << "Proba map : " << _cf_map_ << std::endl;
+}
 
 /*CanonicalForm GaussianInference::getPosterior(*/
         /*vector<GaussianVariable> &variables,*/
@@ -72,72 +109,72 @@ namespace OTAGRUM
     /*return posterior;*/
 /*}*/
 
-void GaussianInference::_sum_product_eliminate_var_(
-        vector< CanonicalForm > &cf_set,
-        GaussianVariable &variable){
+//void GaussianInference::_SumProductEliminateVar_(
+        //vector< CanonicalForm > &cf_set,
+        //GaussianVariable &variable){
 
     // Looking for canonical forms containing the variable to eliminate
-    vector< CanonicalForm > contains_var;
-    vector< CanonicalForm > not_contains_var;
-    for(auto it=cf_set.begin(); it!=cf_set.end(); ++it){
-        if(it->getScope().contains(variable)){
-            contains_var.push_back(*it);
-        }
-        else{
-            not_contains_var.push_back(*it);
-        }
+    //vector< CanonicalForm > contains_var;
+    //vector< CanonicalForm > not_contains_var;
+    //for(auto it=cf_set.begin(); it!=cf_set.end(); ++it){
+        //if(it->getScope().contains(variable)){
+            //contains_var.push_back(*it);
+        //}
+        //else{
+            //not_contains_var.push_back(*it);
+        //}
 
-    }
+    //}
 
     // Multiplying potentials containing the variable to eliminate
-    CanonicalForm product;
-    for(auto cf : contains_var){
-        product *= cf;
-    }
+    //CanonicalForm product;
+    //for(auto cf : contains_var){
+        //product *= cf;
+    //}
 
     // Eliminating the variable from the product
-    if(!contains_var.empty()){
-        product = product.marginal(Scope({variable})); // CHECK IF MARGINAL IS DONE INPLACE
-        not_contains_var.push_back(product);
-    }
+    //if(!contains_var.empty()){
+        //product = product.marginal(Scope({variable})); // CHECK IF MARGINAL IS DONE INPLACE
+        //not_contains_var.push_back(product);
+    //}
 
     // Updating (in place) the set of potentials
-    cf_set = not_contains_var;
-}
+    //cf_set = not_contains_var;
+//}
 
-CanonicalForm GaussianInference::_sum_product_ve_(
-        vector<GaussianVariable> &elim_order,
-        ContinuousEvidence &evidence,
-        vector< CanonicalForm > cf_set){
+//CanonicalForm GaussianInference::_SumProductVE_(
+        //vector<GaussianVariable> &elim_order,
+        //ContinuousEvidence &evidence,
+        //vector< CanonicalForm > cf_set){
 
-    vector<GaussianVariable> red_cont_vars;
-    for(auto x : elim_order){
-        red_cont_vars.push_back(x);
-    }
+    //vector<GaussianVariable> red_cont_vars;
+    //for(auto x : elim_order){
+        //red_cont_vars.push_back(x);
+    //}
 
     //cout << "pot avant : " << potential_set << endl;
 
-    if(!evidence.empty()){
-        for(auto& cf: cf_set){
-                cf.reduce(evidence);
-        }
-    }
+    //if(!evidence.empty()){
+        //for(auto& cf: cf_set){
+                //cf.reduce(evidence);
+        //}
+    //}
 
     //cout << "pot après : " << potential_set << endl;
 
-    if(!elim_order.empty()){
-        for(auto& v : elim_order){
-            _sum_product_eliminate_var_(cf_set, v);
-        }
-    }
+    //if(!elim_order.empty()){
+        //for(auto& v : elim_order){
+            //_SumProductEliminateVar_(cf_set, v);
+        //}
+    //}
 
-    CanonicalForm product;
-    for(auto& p : cf_set){
-        product *= p;
-    }
+    //CanonicalForm product;
+    //for(auto& p : cf_set){
+        //product *= p;
+    //}
     
-    return product;
-}
+    //return product;
+//}
 
 /*gum::JunctionTree GaussianInference::_buildJunctionTreeFromUndiGraph_(const gum::UndiGraph& g) const {*/
 
@@ -159,14 +196,24 @@ CanonicalForm GaussianInference::_sum_product_ve_(
     /*return _buildJunctionTreeFromUndiGraph_(dag.moralGraph());*/
 /*}*/
 
-vector< gum::NodeId > GaussianInference::_findEliminationOrder_(const gum::UndiGraph& g) const {
-    auto mods = g.nodesPropertyFromVal(static_cast< gum::Size >(2));
-    gum::StaticTriangulation* triangulation;
-    triangulation = new gum::DefaultTriangulation(&g, &mods);
-    auto order = triangulation->eliminationOrder();
-    delete (triangulation);
-    return order;
+//vector< gum::NodeId > GaussianInference::_findEliminationOrder_(const gum::UndiGraph& g) const {
+    //auto mods = g.nodesPropertyFromVal(static_cast< gum::Size >(2));
+    //gum::StaticTriangulation* triangulation;
+    //triangulation = new gum::DefaultTriangulation(&g, &mods);
+    //auto order = triangulation->eliminationOrder();
+    //delete (triangulation);
+    //return order;
+//}
+
+std::string GaussianInference::toString() const {
+    std::stringstream s;
+    s << "Used GBN : " << _gbn_.toString();
+    return s.str();
 }
 
+std::ostream& operator<<(std::ostream& output, const GaussianInference& GI) {
+    output << GI.toString();
+    return output;
+}
 
 } // namespace OTAGRUM

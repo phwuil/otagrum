@@ -7,6 +7,8 @@
 
 #include "otagrum/GaussianVariable.hxx"
 
+namespace OTAGRUM {
+
 class Scope {
     friend std::ostream& operator<<(std::ostream& os, const Scope& item);
     friend Scope operator+(const Scope &lhs, const Scope &rhs);
@@ -43,13 +45,16 @@ class Scope {
         bool contains(const GaussianVariable& item) const;
         bool isEmpty() { return _variables_.empty(); }
 
-        // Ajoute une variable dans le scope en retournant la position
-        // a laquelle elle a été ajoutée dans le vecteur trié.
-        int addVariable(GaussianVariable variable);
-        int addVariables(Scope scope);
+        // Ajoute une variable dans le scope
+        void addVariable(GaussianVariable variable);
+        void addVariable(GaussianVariable variable, unsigned int pos);
+        void addVariables(std::vector<GaussianVariable> variables);
+        void eraseVariable(GaussianVariable variable);
 
         Scope& operator+=(const Scope &rhs);
+        Scope& operator+=(const GaussianVariable &variable);
         Scope& operator-=(const Scope &rhs);
+        Scope& operator-=(const GaussianVariable &variable);
 
         
     private:
@@ -62,5 +67,7 @@ Scope operator+(const Scope &lhs, const Scope &rhs);
 Scope operator-(const Scope &lhs, const Scope &rhs);
 bool operator==(const Scope &lhs, const Scope &rhs);
 bool operator!=(const Scope &lhs, const Scope &rhs);
+
+} // namespace OTAGRUM
 
 #endif // SCOPE_H

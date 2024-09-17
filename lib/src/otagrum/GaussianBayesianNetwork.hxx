@@ -1,6 +1,6 @@
 //                                               -*- C++ -*-
 /**
- *  @brief The GaussianBayesianNetwork distribution
+ *  @brief The GaussianBayesianNetworkclass
  *
  *  Copyright 2010-2024 Airbus-LIP6-Phimeca
  *
@@ -18,13 +18,16 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef OTAGRUM_GAUSSIANBAYESIANNETWORK_HXX
-#define OTAGRUM_GAUSSIANBAYESIANNETWORK_HXX
+#ifndef OTAGRUM_GAUSSIANBAYESIANNETWORKFACTORY_HXX
+#define OTAGRUM_GAUSSIANBAYESIANNETWORKFACTORY_HXX
 
-#include <openturns/ContinuousDistribution.hxx>
 #include <openturns/Distribution.hxx>
+#include <openturns/Normal.hxx>
 
 #include "otagrum/NamedDAG.hxx"
+#include "otagrum/GaussianVariable.hxx"
+#include "otagrum/VariableNodeMap.hxx"
+#include "otagrum/GaussianBayesianNetwork.hxx"
 #include "otagrum/otagrumprivate.hxx"
 
 namespace OTAGRUM
@@ -33,93 +36,47 @@ namespace OTAGRUM
 /**
  * @class GaussianBayesianNetwork
  *
- * The GaussianBayesianNetwork distribution.
+ * The GaussianBayesianNetworkclass.
  */
-class OTAGRUM_API GaussianBayesianNetwork
-  : public OT::ContinuousDistribution
+class GaussianBayesianNetwork
 {
-  CLASSNAME
 public:
-
-  typedef OT::Collection< OT::Distribution >           DistributionCollection;
-  typedef OT::PersistentCollection< OT::Distribution > DistributionPersistentCollection;
 
   /** Default constructor */
-  GaussianBayesianNetwork();
-
-  /** Parameters constructor */
-  GaussianBayesianNetwork(const NamedDAG & dag,
-                          const DistributionCollection & distributions);
+  GaussianBayesianNetwork() = default;
 
 public:
-  /** Comparison operator */
-  using OT::ContinuousDistribution::operator ==;
-  OT::Bool operator ==(const GaussianBayesianNetwork & other) const;
-protected:
-  OT::Bool equals(const OT::DistributionImplementation & other) const override;
-public:
-
-  /** String converter */
-  OT::String __repr__() const override;
-  OT::String __str__(const OT::String & offset = "") const override;
-
-
-
-  /* Interface inherited from Distribution */
-
-  /** Virtual constructor */
-  GaussianBayesianNetwork * clone() const override;
-
-  /** Get one realization of the distribution */
-  OT::Point getRealization() const override;
-
-  /** Get the PDF of the distribution, i.e. P(point < X < point+dx) = PDF(point)dx + o(dx) */
-  using OT::ContinuousDistribution::computePDF;
-  OT::Scalar computePDF(const OT::Point & point) const override;
-
-  /** Get the log-PDF of the distribution */
-  using OT::ContinuousDistribution::computeLogPDF;
-  OT::Scalar computeLogPDF(const OT::Point & point) const override;
-
-  /** DAG and distribution accessor */
-  void setDAGAndDistributions(const NamedDAG & dag,
-                                    const DistributionCollection & distributions);
-
   gum::DAG getDAG() const;
-  OT::Indices getParents(const OT::UnsignedInteger nodeId) const;
-  /** One distribution per node */
-  DistributionCollection getDistributions() const;
+  GaussianVariable getVariable(gum::NodeId varId) const;
+  gum::NodeSet getParents(gum::NodeId varId) const;
 
-  using OT::ContinuousDistribution::getMarginal;
+  int addVariable(GaussianVariable variable);
+  int addVariable(const std::string& name, double mu = 0, double sigma = 1);
+  gum::Arc addArc(int varId1, int varId2, double weight);
 
-  OT::Distribution getMarginal(const OT::UnsignedInteger i) const override;
-  OT::Distribution getDistributionAtNode(const OT::UnsignedInteger i) const;
+  gum::Size size() const;
+  std::string toString() const;
 
-  /** Method save() stores the object through the StorageManager */
-  void save(OT::Advocate & adv) const override;
+  void changeMu(gum::NodeId varId, double mu);
+  double getMu(gum::NodeId varId);
+  void changeSigma(gum::NodeId varId, double sigma);
+  double getSigma(gum::NodeId varId);
 
-  /** Method load() reloads the object from the StorageManager */
-  void load(OT::Advocate & adv) override;
+  double getWeight(gum::Arc arc);
+  double getWeight(gum::NodeId tailId, gum::NodeId headId);
 
-protected:
+  gum::Sequence < gum::NodeId > getTopologicalOrder();
+
+  OT::Normal buildNormalDistribution() const;
 
 private:
-  /** Compute the range */
-  void computeRange() override;
+  VariableNodeMap _varMap_;
+  gum::DAG _dag_;
+  gum::ArcProperty< double > _weights_;
+}; /* class GaussianBayesianNetwork*/
 
-  /** The main parameter set of the distribution */
-
-  /** Underlying junction tree */
-  NamedDAG _dag_;
-
-  /** Collection of Gaussian distributions one per node */
-  DistributionPersistentCollection _marginals_;
-
-  /** Collection of Gaussian distributions one per node */
-  DistributionPersistentCollection _distributions_;
-
-}; /* class GaussianBayesianNetwork */
+std::ostream& operator<<(std::ostream& output, const GaussianBayesianNetwork& factory);
 
 } /* namespace OTAGRUM */
 
-#endif /* OTAGRUM_GAUSSIANBAYESIANNETWORK_HXX */
+#endif /* OTAGRUM_GAUSSIANBAYESIANNETWORKFACTORY_HXX */
