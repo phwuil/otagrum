@@ -46,9 +46,12 @@ public:
   GaussianBayesianNetwork() = default;
 
 public:
+  gum::Size getDimension() const;
   gum::DAG getDAG() const;
   GaussianVariable getVariable(gum::NodeId varId) const;
-  gum::NodeSet getParents(gum::NodeId varId) const;
+  gum::NodeSet getParentsId(gum::NodeId varId) const;
+  std::vector < GaussianVariable > getParents(gum::NodeId varId) const;
+  bool existsArc(gum::NodeId tailId, gum::NodeId headId) const;
 
   int addVariable(GaussianVariable variable);
   int addVariable(const std::string& name, double mu = 0, double sigma = 1);
@@ -57,15 +60,19 @@ public:
   gum::Size size() const;
   std::string toString() const;
 
+  std::string getName(gum::NodeId varId) const;
+
   void changeMu(gum::NodeId varId, double mu);
-  double getMu(gum::NodeId varId);
+  double getMu(gum::NodeId varId) const;
   void changeSigma(gum::NodeId varId, double sigma);
-  double getSigma(gum::NodeId varId);
+  double getSigma(gum::NodeId varId) const;
 
-  double getWeight(gum::Arc arc);
-  double getWeight(gum::NodeId tailId, gum::NodeId headId);
+  double getWeight(gum::Arc arc) const;
+  double getWeight(gum::NodeId tailId, gum::NodeId headId) const;
 
-  gum::Sequence < gum::NodeId > getTopologicalOrder();
+  gum::Sequence < gum::NodeId > getTopologicalOrder() const;
+
+  OT::Sample getSample(unsigned int size) const;
 
   OT::Normal buildNormalDistribution() const;
 

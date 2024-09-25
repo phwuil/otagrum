@@ -44,11 +44,7 @@ GaussianInference::GaussianInference(GaussianBayesianNetwork GBN)
 void GaussianInference::_buildCanonicalForms_() {
     for(const auto nid: _cf_topo_order_) {
         auto variable = _gbn_.getVariable(nid);
-        auto parents_id = _gbn_.getParents(nid);
-        vector<GaussianVariable> parents;
-        for(const auto pid: parents_id){
-            parents.push_back(_gbn_.getVariable(pid));
-        }
+        auto parents = _gbn_.getParents(nid);
 
         auto mu = _gbn_.getMu(nid);
         auto sigma  = _gbn_.getSigma(nid);
@@ -64,7 +60,7 @@ void GaussianInference::_buildCanonicalForms_() {
         else if (parents.size() > 0) {
             std::cout << "Not empty ! " << std::endl;
             std::vector < double > weights;
-            for(const auto pid: parents_id){
+            for(const auto pid: _gbn_.getParentsId(nid)){
                 weights.push_back(_gbn_.getWeight(pid, nid));
             }
             std::cout << "Weights : " << weights << std::endl;
@@ -72,6 +68,7 @@ void GaussianInference::_buildCanonicalForms_() {
         }
         _cf_map_.insert(nid, cf);
     }
+    std::cout << "Topological order : " << _cf_topo_order_ << std::endl;
     std::cout << "Proba map : " << _cf_map_ << std::endl;
 }
 
