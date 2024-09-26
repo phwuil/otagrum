@@ -70,13 +70,17 @@ int GaussianBayesianNetwork::addVariable(const std::string& name, double mu, dou
     return addVariable(v);
 }
 
-gum::Arc GaussianBayesianNetwork::addArc(int varId1, int varId2, double weight){
+gum::Arc GaussianBayesianNetwork::addArc(gum::NodeId varId1, gum::NodeId varId2, double weight){
     auto arc = gum::Arc(varId1, varId2);
     if (!_weights_.exists(arc) && weight != 0.){
         _weights_.insert(arc, weight);
         _dag_.addArc(varId1, varId2);
     }
     return arc;
+}
+
+gum::Arc GaussianBayesianNetwork::addArc(std::string varName1, std::string varName2, double weight){
+    return addArc(_varMap_.idFromName(varName1), _varMap_.idFromName(varName2), weight);
 }
 
 gum::Size GaussianBayesianNetwork::size() const {
@@ -156,19 +160,11 @@ OT::Sample GaussianBayesianNetwork::getSample(unsigned int size) const {
             // If the node has parents, mu is a linear regression of parents
             if (parents_id.size() > 0) {
                 for (const auto pid: parents_id) {
-                    //std::cout << "Parent: " << topo_order[pid] << std::endl;
-                    //std::cout << "Weight: " << getWeight( << std::endl;
                     mu += getWeight(pid,nid) * realization[pid];
                 }
             }
 
             realization.insert(nid, OT::Normal(mu, sigma).getRealization()[0]);
-
-            if (m == 0) {
-                std::cout << "Mu(" << getName(topo_order[i]) << ")= " << mu << std::endl;
-                std::cout << "Sigma(" << getName(topo_order[i]) << ")= " << sigma << std::endl;
-                std::cout << "Realization: " << realization << std::endl;
-            }
         }
 
         // Converting the NodeProperty into an OT::Point

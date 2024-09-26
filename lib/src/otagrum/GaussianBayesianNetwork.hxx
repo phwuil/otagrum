@@ -55,7 +55,8 @@ public:
 
   int addVariable(GaussianVariable variable);
   int addVariable(const std::string& name, double mu = 0, double sigma = 1);
-  gum::Arc addArc(int varId1, int varId2, double weight);
+  gum::Arc addArc(gum::NodeId varId1, gum::NodeId varId2, double weight);
+  gum::Arc addArc(std::string varName1, std::string varName2, double weight);
 
   gum::Size size() const;
   std::string toString() const;
