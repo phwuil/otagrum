@@ -48,6 +48,9 @@ namespace OTAGRUM
  * The GaussianInference that uses a variable elimination algorithm to make
  * inference in a GBN.
  */
+
+using GaussianEvidence = std::vector<std::pair<GaussianVariable, double>>;
+
 class GaussianInference {
 
 public:
@@ -56,9 +59,9 @@ public:
   explicit GaussianInference(GaussianBayesianNetwork gbn);
 
   
-  //CanonicalForm getPosterior(
-          //std::vector<GaussianVariable> &variables,
-          //ContinuousEvidence &evidence);
+  CanonicalForm getPosterior(
+          std::vector<GaussianVariable> &variables,
+          GaussianEvidence &evidence);
   
   std::string toString() const;
 
@@ -77,9 +80,9 @@ private:
    * @param variable The continuous variable to remove
    */
 
-    //void _SumProductEliminateVar_(
-          //std::vector< CanonicalForm > &cf_set,
-          //GaussianVariable &variable);
+    void _SumProductEliminateVar_(
+          std::vector< CanonicalForm > &cf_set,
+          GaussianVariable &variable);
 
   /**
    * @brief Variable elimination sum-product algorithm for CLGs
@@ -90,14 +93,14 @@ private:
    *
    * @return The resulting product of potentials
    */
-  //CanonicalForm _SumProductVE_(
-          //std::vector<GaussianVariable> &elim_order,
-          //ContinuousEvidence &evidence,
-          //std::vector< CanonicalForm > cf_set);
+  CanonicalForm _SumProductVE_(
+          std::vector<GaussianVariable> &elim_order,
+          GaussianEvidence &evidence,
+          std::vector< CanonicalForm > cf_set);
 
-    //gum::JunctionTree _buildJunctionTreeFromUndiGraph_(const gum::UndiGraph& g) const;
-    //gum::JunctionTree _buildJunctionTreeFromDAG_(const gum::DAG& dag) const;
-    //std::vector< gum::NodeId > _findEliminationOrder_(const gum::UndiGraph& g) const;
+  gum::JunctionTree _buildJunctionTreeFromUndiGraph_(const gum::UndiGraph& g) const;
+    gum::JunctionTree _buildJunctionTreeFromDAG_(const gum::DAG& dag) const;
+    std::vector< gum::NodeId > _findEliminationOrder_(const gum::UndiGraph& g) const;
     std::vector< CanonicalForm > _cf_set_;
 
     GaussianBayesianNetwork _gbn_;

@@ -52,6 +52,7 @@ void GaussianInference::_buildCanonicalForms_() {
         auto cf = CanonicalForm();
 
         std::cout << "Node Id : " << nid << std::endl;
+        std::cout << "Variable : " << _gbn_.getVariable(nid) << std::endl;
         if(parents.size() == 0) {
             std::cout << "Empty ! " << std::endl;
             cf = CanonicalForm(variable);
@@ -61,6 +62,8 @@ void GaussianInference::_buildCanonicalForms_() {
             std::cout << "Not empty ! " << std::endl;
             std::vector < double > weights;
             for(const auto pid: _gbn_.getParentsId(nid)){
+                std::cout << "Parent Id : " << pid << std::endl;
+                std::cout << "Parent : " << _gbn_.getVariable(pid) << std::endl;
                 weights.push_back(_gbn_.getWeight(pid, nid));
             }
             std::cout << "Weights : " << weights << std::endl;
@@ -72,135 +75,133 @@ void GaussianInference::_buildCanonicalForms_() {
     std::cout << "Proba map : " << _cf_map_ << std::endl;
 }
 
-/*CanonicalForm GaussianInference::getPosterior(*/
-        /*vector<GaussianVariable> &variables,*/
-        /*ContinuousEvidence &evidence){*/
-    /*auto dag = _gbn_.getDAG();*/
-    /*auto elimination_order = _findEliminationOrder_(dag.moralGraph());*/
-    /*auto elimination_order_removed = vector<gum::NodeId>();*/
-    /*auto elimination_order_kept = vector<gum::NodeId>();*/
+CanonicalForm GaussianInference::getPosterior(GaussianEvidence &evidence){
+    auto dag = _gbn_.getDAG();
+    auto elimination_order = _findEliminationOrder_(dag.moralGraph());
+    auto elimination_order_removed = vector<gum::NodeId>();
+    auto elimination_order_kept = vector<gum::NodeId>();
 
-    /*for (const auto& v:elimination_order){*/
-        /*if (find(variables.begin(), variables.end(), v) == variables.end())*/
-            /*elimination_order_removed.push_back(v);*/
-        /*else*/
-            /*elimination_order_kept.push_back(v);*/
-    /*}*/
+    for (const auto& v:elimination_order){
+        if (find(variables.begin(), variables.end(), v) == variables.end())
+            elimination_order_removed.push_back(v);
+        else
+            elimination_order_kept.push_back(v);
+    }
 
-    /*auto cf_list = _sum_product_ve_(elimination_order_removed, evidence, _cf_set_);*/
+    auto cf_list = _SumProductVE_(elimination_order_removed, evidence, _cf_set_);
 
-    /*CanonicalForm posterior();*/
-    /*for (const auto& p:cf_list) {*/
-        /*posterior *= p;*/
-    /*}*/
+    CanonicalForm posterior();
+    for (const auto& p:cf_list) {
+        posterior *= p;
+    }
 
-    /*if (normalized) {*/
-        /*auto normalization_cf = _sum_product_ve_(elimination_order_kept, {}, cf_list);*/
-        /*CanonicalForm normalization();*/
-        /*for (const auto& cf: normalization_cf){*/
-            /*normalization *= cf;*/
-        /*}*/
-        /*posterior /= normalization;*/
-    /*}*/
+    if (normalized) {
+        auto normalization_cf = _SumProductVE_(elimination_order_kept, {}, cf_list);
+        CanonicalForm normalization();
+        for (const auto& cf: normalization_cf){
+            normalization *= cf;
+        }
+        posterior /= normalization;
+    }
 
-    /*return posterior;*/
-/*}*/
+    return posterior;
+}
 
-//void GaussianInference::_SumProductEliminateVar_(
-        //vector< CanonicalForm > &cf_set,
-        //GaussianVariable &variable){
+void GaussianInference::_SumProductEliminateVar_(
+        vector< CanonicalForm > &cf_set,
+        GaussianVariable &variable){
 
     // Looking for canonical forms containing the variable to eliminate
-    //vector< CanonicalForm > contains_var;
-    //vector< CanonicalForm > not_contains_var;
-    //for(auto it=cf_set.begin(); it!=cf_set.end(); ++it){
-        //if(it->getScope().contains(variable)){
-            //contains_var.push_back(*it);
-        //}
-        //else{
-            //not_contains_var.push_back(*it);
-        //}
+    vector< CanonicalForm > contains_var;
+    vector< CanonicalForm > not_contains_var;
+    for(auto it=cf_set.begin(); it!=cf_set.end(); ++it){
+        if(it->getScope().contains(variable)){
+            contains_var.push_back(*it);
+        }
+        else{
+            not_contains_var.push_back(*it);
+        }
 
-    //}
+    }
 
     // Multiplying potentials containing the variable to eliminate
-    //CanonicalForm product;
-    //for(auto cf : contains_var){
-        //product *= cf;
-    //}
+    CanonicalForm product;
+    for(auto cf : contains_var){
+        product *= cf;
+    }
 
     // Eliminating the variable from the product
-    //if(!contains_var.empty()){
-        //product = product.marginal(Scope({variable})); // CHECK IF MARGINAL IS DONE INPLACE
-        //not_contains_var.push_back(product);
-    //}
+    if(!contains_var.empty()){
+        product = product.marginal(Scope({variable})); // CHECK IF MARGINAL IS DONE INPLACE
+        not_contains_var.push_back(product);
+    }
 
     // Updating (in place) the set of potentials
-    //cf_set = not_contains_var;
-//}
+    cf_set = not_contains_var;
+}
 
-//CanonicalForm GaussianInference::_SumProductVE_(
-        //vector<GaussianVariable> &elim_order,
-        //ContinuousEvidence &evidence,
-        //vector< CanonicalForm > cf_set){
+CanonicalForm GaussianInference::_SumProductVE_(
+        vector<GaussianVariable> &elim_order,
+        GaussianEvidence &evidence,
+        vector< CanonicalForm > cf_set){
 
-    //vector<GaussianVariable> red_cont_vars;
-    //for(auto x : elim_order){
-        //red_cont_vars.push_back(x);
-    //}
+    vector<GaussianVariable> red_cont_vars;
+    for(auto x : elim_order){
+        red_cont_vars.push_back(x);
+    }
 
     //cout << "pot avant : " << potential_set << endl;
 
-    //if(!evidence.empty()){
-        //for(auto& cf: cf_set){
-                //cf.reduce(evidence);
-        //}
-    //}
+    if(!evidence.empty()){
+        for(auto& cf: cf_set){
+                cf.reduce(evidence);
+        }
+    }
 
     //cout << "pot après : " << potential_set << endl;
 
-    //if(!elim_order.empty()){
-        //for(auto& v : elim_order){
-            //_SumProductEliminateVar_(cf_set, v);
-        //}
-    //}
+    if(!elim_order.empty()){
+        for(auto& v : elim_order){
+            _SumProductEliminateVar_(cf_set, v);
+        }
+    }
 
-    //CanonicalForm product;
-    //for(auto& p : cf_set){
-        //product *= p;
-    //}
+    CanonicalForm product;
+    for(auto& p : cf_set){
+        product *= p;
+    }
     
-    //return product;
-//}
+    return product;
+}
 
-/*gum::JunctionTree GaussianInference::_buildJunctionTreeFromUndiGraph_(const gum::UndiGraph& g) const {*/
+gum::JunctionTree GaussianInference::_buildJunctionTreeFromUndiGraph_(const gum::UndiGraph& g) const {
 
-    /*auto mods = g.nodesPropertyFromVal(static_cast< gum::Size >(2));*/
+    auto mods = g.nodesPropertyFromVal(static_cast< gum::Size >(2));
 
-    /*gum::StaticTriangulation* triangulation;*/
-    /*triangulation = new gum::DefaultTriangulation(&g, &mods);*/
+    gum::StaticTriangulation* triangulation;
+    triangulation = new gum::DefaultTriangulation(&g, &mods);
 
-    /*gum::DefaultJunctionTreeStrategy strategy;*/
-    /*strategy.setTriangulation(triangulation);*/
-    /*auto res = strategy.junctionTree();*/
-    /*delete (triangulation);*/
+    gum::DefaultJunctionTreeStrategy strategy;
+    strategy.setTriangulation(triangulation);
+    auto res = strategy.junctionTree();
+    delete (triangulation);
 
-    /*return res;*/
-/*}*/
+    return res;
+}
 
 
-/*gum::JunctionTree GaussianInference::_buildJunctionTreeFromDAG_(const gum::DAG& dag) const {*/
-    /*return _buildJunctionTreeFromUndiGraph_(dag.moralGraph());*/
-/*}*/
+gum::JunctionTree GaussianInference::_buildJunctionTreeFromDAG_(const gum::DAG& dag) const {
+    return _buildJunctionTreeFromUndiGraph_(dag.moralGraph());
+}
 
-//vector< gum::NodeId > GaussianInference::_findEliminationOrder_(const gum::UndiGraph& g) const {
-    //auto mods = g.nodesPropertyFromVal(static_cast< gum::Size >(2));
-    //gum::StaticTriangulation* triangulation;
-    //triangulation = new gum::DefaultTriangulation(&g, &mods);
-    //auto order = triangulation->eliminationOrder();
-    //delete (triangulation);
-    //return order;
-//}
+vector< gum::NodeId > GaussianInference::_findEliminationOrder_(const gum::UndiGraph& g) const {
+    auto mods = g.nodesPropertyFromVal(static_cast< gum::Size >(2));
+    gum::StaticTriangulation* triangulation;
+    triangulation = new gum::DefaultTriangulation(&g, &mods);
+    auto order = triangulation->eliminationOrder();
+    delete (triangulation);
+    return order;
+}
 
 std::string GaussianInference::toString() const {
     std::stringstream s;
