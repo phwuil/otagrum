@@ -50,6 +50,7 @@ def testAsiaDirichlet():
 def testEmptySampleRaises():
     with ott.assert_raises(TypeError):
         otagrum.ContinuousPC(ot.Sample())
+    print("empty sample raises : OK")
 
 
 testSpecificInstance()

@@ -367,21 +367,13 @@ gum::MixedGraph ContinuousPC::inferPDAG(const gum::UndiGraph &g) const
     if (!(pdag.existsArc(t.y, t.x) || pdag.existsArc(t.y, t.z)))
     {
       // we can add the v-structure
-      try
+      if (pdag.directedPath(t.y, t.x).has_value())
       {
-        pdag.directedPath(t.y, t.x);
         continue;
       }
-      catch (const gum::NotFound &)
+      if (pdag.directedPath(t.y, t.z).has_value())
       {
-      }
-      try
-      {
-        pdag.directedPath(t.y, t.z);
         continue;
-      }
-      catch (const gum::NotFound &)
-      {
       }
       pdag.eraseEdge(gum::Edge(t.x, t.y));
       pdag.eraseEdge(gum::Edge(t.z, t.y));

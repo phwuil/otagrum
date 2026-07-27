@@ -40,6 +40,7 @@ def testBasic():
 def testEmptySampleRaises():
     with ott.assert_raises(TypeError):
         otagrum.ContinuousTTest(ot.Sample())
+    print("empty sample raises : OK")
 
 
 testBasic()

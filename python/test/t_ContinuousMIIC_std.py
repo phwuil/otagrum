@@ -105,6 +105,7 @@ def testMathis():
 def testEmptySampleRaises():
     with ott.assert_raises(TypeError):
         otagrum.ContinuousMIIC(ot.Sample())
+    print("empty sample raises : OK")
 
 
 testSpecificInstance()

@@ -323,7 +323,7 @@ double ContinuousTTest::getTTestWithoutCorrections(OT::UnsignedInteger Y,
       H += std::pow(
              std::expm1(0.5 * logFYX[i] + logFZX[i] - logFYZX[i] - logFX[i]), 2.0);
   const auto T =
-    4 * H * N * std::pow(1.0 / k, 0.5 * d + 1.0) / sigma;
+    4 * H * N - 1.0 / (k * sigma);
   LOGINFO(OT::OSS() << "Y=" << Y << ", Z=" << Z << ", X=" << X << ", T=" << T
           << ", H=" << H);
   return T;

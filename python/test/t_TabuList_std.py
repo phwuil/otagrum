@@ -2,6 +2,7 @@
 
 import os
 import openturns as ot
+import openturns.testing as ott
 import otagrum
 
 
@@ -47,5 +48,13 @@ def testAsiaDirichlet():
     print(dag.toDot())
 
 
+def testRestartsZeroRaises():
+    data = generateDataForSpecificInstance(1000)
+    with ott.assert_raises(TypeError):
+        otagrum.TabuList(data, restarts=0)
+    print("restarts=0 raises : OK")
+
+
 testSpecificInstance()
 testAsiaDirichlet()
+testRestartsZeroRaises()
