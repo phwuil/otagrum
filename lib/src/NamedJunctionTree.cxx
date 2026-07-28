@@ -210,11 +210,7 @@ NamedJunctionTree NamedJunctionTree::getMarginal(const OT::Indices & indices) co
       if (sortedEdges[pos].empty())
         break;
       auto edge = *(sortedEdges[pos].begin());
-      try
-      {
-        auto v = m_jt.undirectedPath(edge.first(), edge.second());
-      }
-      catch (const gum::NotFound &)
+      if (!m_jt.undirectedPath(edge.first(), edge.second()).has_value())
       {
         m_jt.addEdge(edge.first(), edge.second());
       }
